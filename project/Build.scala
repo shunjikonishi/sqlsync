@@ -12,12 +12,15 @@ object ApplicationBuild extends Build {
     jdbc,
     anorm,
     "postgresql" % "postgresql" % "9.1-901.jdbc4",
-    "com.google.code.gson" % "gson" % "2.2.2"
+    "com.google.code.gson" % "gson" % "2.2.2",
+    "se.radley" %% "play-plugins-salat" % "1.2"
+//    "se.radley" % "play-plugins-salat_2.10.0-RC1" % "1.2-SNAPSHOT"
   )
 
 
   val main = play.Project(appName, appVersion, appDependencies).settings(
     // Add your own project settings here      
+    resolvers += "Typesafe Repository 2" at "http://repo.typesafe.com/typesafe/repo/"
   )
 
 }
