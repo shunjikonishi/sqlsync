@@ -4,6 +4,7 @@ import play.api.data.Form;
 import play.api.data.Forms.mapping;
 import play.api.data.Forms.text;
 import play.api.data.Forms.number;
+import play.api.data.Forms.default;
 
 import play.api.libs.json.Json.toJson;
 import play.api.libs.json.JsValue;
@@ -17,10 +18,10 @@ object JqGrid {
 	}
 	
 	val JqGridForm = Form(mapping(
-		"page" -> number,
-		"rows" -> number,
-		"sidx" -> text,
-		"sord" -> text
+		"page" -> default(number, 1),
+		"rows" -> default(number, 50),
+		"sidx" -> default(text, ""),
+		"sord" -> default(text, "asc")
 	)(Parameter.apply)(Parameter.unapply));
 	
 	case class Column(val name: String) {

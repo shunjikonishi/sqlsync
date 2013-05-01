@@ -1,17 +1,31 @@
 @(message: String)
 
-@main("Welcome to Play 2.1") {
+@main("SQLsync") {
+<link rel='stylesheet' type='text/css' href='@routes.Assets.at("javascripts/ext/jqgrid/css/ui.jqgrid.css")' />
+<script type='text/javascript' src='@routes.Assets.at("javascripts/ext/jqgrid/js/i18n/grid.locale-ja.js")'></script>
+<script type='text/javascript' src='@routes.Assets.at("javascripts/ext/jqgrid/js/jquery.jqGrid.src.js")'></script>
+<script src="@routes.Assets.at("javascripts/sqlgrid.js")" type="text/javascript"></script>
 <script>
-$(function() {
-})()
+$(document).ready(function() {
+	var grid = new flect.util.SQLGrid({
+		"modelPath" : "/sql/model",
+		"dataPath" : "/sql/data",
+		"div" : "#gridDiv",
+		"error" : function(str) {
+			$("#error-msg").text(str);
+		}
+	});
+	$("#btnSQL").click(function() {
+		grid.execute($("#sql").val());
+	});
+});
 </script>
     <div>
-    	<textarea id="sql" cols="40" rows="10"></textarea>
+    	<textarea id="sql" cols="40" rows="10">select * from contents</textarea>
     	<button id="btnSQL">Execute</button>
     </div>
-    <div>
-    	<table id="grid"></table>
+    <div id="gridDiv" style="width:90%;">
     </div>
-    <div id="test">
+    <div id="error-msg">
     </div>
 }

@@ -1,41 +1,65 @@
 package utils;
 
-import java.sql.Connection;
-import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import play.api.db.DB;
 import play.api.Play.current;
 import play.api.mvc.Controller;
 import play.api.mvc.Action;
+import play.api.mvc.Request;
+import play.api.mvc.AnyContent;
+import play.api.cache.Cache;
+
+import jp.co.flect.javascript.jqgrid.ColModel;
+import jp.co.flect.javascript.jqgrid.RdbColModelFactory;
+import jp.co.flect.javascript.jqgrid.RdbQueryModel;
 
 /**
  * Return results of select statement with jqGrid JSON format.
  */
-object SelectTool extends Controller {
+class SelectTool extends Controller {
+	
+	private val CACHE_DURATION = 60 * 60;
 	
 	def colModel = Action { implicit request =>
-		val sql = "SELECT * FROM (" + 
-			RequestUtils.getPostParam("sql").getOrElse("") + 
-			") TEMP WHERE 1 = 2";
-		DB.withConnection { con =>
-			val stmt = con.prepareStatement(sql);
-			try {
-				val rs = stmt.executeQuery;
-				try {
-				} finally {
-					rs.close;
-				}
-			} finally {
-				stmt.close;
-			}
+		try {
+			val (sql, model) = getSQLandModel;
+			Ok(model.toJson).as("application/json");
+		} catch {
+			case e: SQLException => BadRequest(e.getMessage);
 		}
-		Ok("test");
 	}
 	
-	private def createColModel(meta: ResultSetMetaData) = {
-		for (i <- 1 to meta.getColumnCount) yield {
-			val name = meta.getColumnLabel(i);
-			val col = new JqGrid.Column(name);
-			col;
+	def data = Action { implicit request =>
+		try {
+			val (sql, model) = getSQLandModel;
+			val gridParam = JqGrid.JqGridForm.bindFromRequest.get;
+			
+			DB.withConnection { con =>
+				val queryModel = new RdbQueryModel(con, sql, model);
+				queryModel.setUseOffset(true);
+				if (gridParam.sortColumn.length > 0) {
+					queryModel.setOrder(gridParam.sortColumn, gridParam.sortAsc);
+				}
+				val data = queryModel.getGridData(gridParam.page, gridParam.rows);
+				Ok(data.toJson).as("application/json");
+			}
+		} catch {
+			case e: SQLException => BadRequest(e.getMessage);
+		}
+	}
+	
+	private def getSQLandModel(implicit request: Request[AnyContent]) = {
+		RequestUtils.getPostParam("sql") match {
+			case Some(sql) =>
+				val model = Cache.getOrElse[ColModel](sql) {
+					DB.withConnection { con =>
+						val factory = new RdbColModelFactory(con);
+						factory.getQueryModel(sql);
+					}
+				}
+				Cache.set(sql, model, CACHE_DURATION);
+				(sql, model);
+			case None => throw new SQLException("SQL not specified");
 		}
 	}
 }
