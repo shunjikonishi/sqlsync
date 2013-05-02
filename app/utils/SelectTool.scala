@@ -16,7 +16,7 @@ import jp.co.flect.javascript.jqgrid.RdbQueryModel;
 /**
  * Return results of select statement with jqGrid JSON format.
  */
-class SelectTool extends Controller {
+trait SelectTool extends Controller {
 	
 	private val CACHE_DURATION = 60 * 60;
 	

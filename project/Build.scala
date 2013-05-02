@@ -13,7 +13,11 @@ object ApplicationBuild extends Build {
     anorm,
     "postgresql" % "postgresql" % "9.1-901.jdbc4",
     "com.google.code.gson" % "gson" % "2.2.2",
-    "se.radley" %% "play-plugins-salat" % "1.2"
+    "se.radley" %% "play-plugins-salat" % "1.2",
+    "org.apache.velocity" % "velocity" % "1.7",
+    "log4j" % "log4j" % "1.2.17",
+    "org.apache.httpcomponents" % "httpclient" % "4.2.4"
+            
 //    "se.radley" % "play-plugins-salat_2.10.0-RC1" % "1.2-SNAPSHOT"
   )
 
