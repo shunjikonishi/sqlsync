@@ -25,12 +25,16 @@ trait StorageManager {
 	
 	
 	def list: List[SqlInfo];
-	
 	def add(info: SqlInfo): Boolean;
 	def remove(info: SqlInfo): Boolean;
 	def update(info: SqlInfo): Boolean;
 	
 	def removeAll: Boolean;
+	
+	def get(name: String) = {
+		list.filter(_.name == name).headOption;
+	}
+	
 }
 
 case class MongoSqlInfo(

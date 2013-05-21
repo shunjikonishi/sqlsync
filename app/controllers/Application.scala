@@ -19,8 +19,7 @@ object Application extends Controller with AccessControl {
 	private val man: StorageManager = new MongoStorageManager();
 	
 	private lazy val objectList = {
-		Salesforce.getInstance.listObjectNames;
-		
+		Salesforce(man).listObjectNames;
 	}
 	
 	def index = filterAction { implicit request =>
@@ -45,8 +44,19 @@ object Application extends Controller with AccessControl {
 			BadRequest;
 		} else {
 			val info = data.get;
-			man.add(info);
-			Redirect("/");
+			val validation = Salesforce(man).validate(info);
+			if (validation.hasError) {
+				Redirect("/").flashing(
+					"error" -> validation.msg,
+					"name" -> info.name,
+					"sql" -> info.sql,
+					"objectName" -> info.objectName,
+					"externalIdFieldName" -> info.externalIdFieldName
+				);
+			} else {
+				man.add(info);
+				Redirect("/");
+			}
 		}
 		
 	}

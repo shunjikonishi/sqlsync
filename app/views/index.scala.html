@@ -1,4 +1,4 @@
-@(list: List[models.SqlInfo], oList: List[String])
+@(list: List[models.SqlInfo], oList: List[String])(implicit flash: Flash)
 
 @main("SQLsync") {
 <link rel='stylesheet' type='text/css' href='@routes.Assets.at("javascripts/ext/jqgrid/css/ui.jqgrid.css")' />
@@ -29,8 +29,8 @@ $(document).ready(function() {
 				<th>SQL</th>
 				<th>オブジェクト名</th>
 				<th>外部ID</th>
-				<th>前々回実行日時</th>
-				<th>前回実行日時</th>
+				<th>前回対象日時</th>
+				<th>次回対象日時</th>
 			</tr>
 			@list.map{ obj =>
 			<tr>
@@ -46,13 +46,14 @@ $(document).ready(function() {
 		</ul>
 	</div>
 	<hr>
+	@flash.get("error").map{ s => <div style="color:red">@s</div>}
     <div>
     	<h2>追加</h2>
     	<form action="/sync/add" method="post">
-    		名前 <input id="name" name="name"><br>
-    		SQL  <textarea id="sql" name="sql" cols="40" rows="10">select * from contents</textarea><br>
-    		オブジェクト名 <select id="objectName" name="objectName">@oList.map{ s => <option value="@s">@s</option>}</select><br>
-    		外部ID <input id="externalIdFieldName" name="externalIdFieldName"><br>
+    		名前 <input id="name" name="name" value="@flash.get("name")"><br>
+    		SQL  <textarea id="sql" name="sql" cols="40" rows="10">@flash.get("sql")</textarea><br>
+    		オブジェクト名 <select id="objectName" name="objectName">@oList.map{ s => <option value="@s" @flash.get("objectName").filter(_ == s).map(s=> "selected")>@s</option>}</select><br>
+    		外部ID <input id="externalIdFieldName" name="externalIdFieldName" value="@flash.get("externalIdFieldName")"><br>
     		<input type="submit" value="登録"/>
     	</form>
     	<button id="btnSQL">SQL実行</button>
