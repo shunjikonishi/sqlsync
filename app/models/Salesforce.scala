@@ -67,6 +67,8 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 				new ValidationResult(true, "名前が重複しています。: " + info.name);
 			} else if (objectDef == null) {
 				new ValidationResult(true, "オブジェクトが見つかりません。: " + info.objectName);
+			} else if (info.sql.filter(_ == '?').length != 1) {
+				new ValidationResult(true, "日付型フィールドのパラメータが必要です。: " + info.sql);
 			} else if (objectDef.getField(info.externalIdFieldName) == null || 
 				!objectDef.getField(info.externalIdFieldName).isExternalId) 
 			{
