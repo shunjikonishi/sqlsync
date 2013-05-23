@@ -4,6 +4,7 @@ import java.util.Date;
 import java.text.SimpleDateFormat;
 import play.api.Play.current;
 import play.api.mvc.Controller;
+import play.api.mvc.Action;
 import play.api.db.DB;
 import play.api.data.Form;
 import play.api.data.Forms.mapping;
@@ -21,13 +22,13 @@ object Application extends Controller with AccessControl {
 	private val man: StorageManager = new MongoStorageManager();
 	
 	private val mode = Option(System.getProperty("app.mode")).getOrElse("Unknown");
+println("Mode=" + mode);
 	
 	private lazy val objectList = {
 		Salesforce(man).listObjectNames;
 	}
 	
 	def main = filterAction { implicit request =>
-println("Mode=" + mode);
 		val list = man.list;
 		val oList = objectList
 		Ok(views.html.main(list, oList))
@@ -111,6 +112,15 @@ println("Mode=" + mode);
 					Ok(Option(e.getMessage()).getOrElse(e.toString()));
 			}
 		}
+	}
+	
+	def executeAll = Action { implicit request =>
+		val date = new Date();
+		val sm = Salesforce(man);
+		man.list.foreach { info =>
+			sm.execute(date, info);
+		}
+		Ok("OK");
 	}
 	
 	//Schedule Task
