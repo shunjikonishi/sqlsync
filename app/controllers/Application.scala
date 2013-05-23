@@ -20,11 +20,14 @@ object Application extends Controller with AccessControl {
 	
 	private val man: StorageManager = new MongoStorageManager();
 	
+	private val mode = Option(System.getProperty("app.mode")).getOrElse("Unknown");
+	
 	private lazy val objectList = {
 		Salesforce(man).listObjectNames;
 	}
 	
 	def main = filterAction { implicit request =>
+println("Mode=" + mode);
 		val list = man.list;
 		val oList = objectList
 		Ok(views.html.main(list, oList))
