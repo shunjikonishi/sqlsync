@@ -3,9 +3,11 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.Application.index
-GET     /test                       controllers.Application.test
+GET     /                           controllers.Application.main
 POST    /sync/add                   controllers.Application.add
+POST    /sync/update                controllers.Application.update
+POST    /sync/delete                controllers.Application.delete
+POST    /sync/execute               controllers.Application.execute
 POST    /sql/model                  controllers.MySelectTool.colModel
 POST    /sql/data                   controllers.MySelectTool.data
 

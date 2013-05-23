@@ -28,7 +28,10 @@ flect.util.SQLGrid = function(setting) {
 	function defaultError(str) {
 		alert(str);
 	}
-	function execute(sql) {
+	function execute(sql, params) {
+		var data = {
+			"sql" : sql
+		};
 		$.ajax({
 			"url" : setting.modelPath, 
 			"type" : "POST",
@@ -36,14 +39,14 @@ flect.util.SQLGrid = function(setting) {
 				"sql" : sql
 			},
 			"success" : function(data) {
-				makeGrid(sql, data);
+				makeGrid(sql, data, params);
 			},
 			"error" : function(xhr) {
 				setting.error(xhr.responseText);
 			}
 		});
 	}
-	function makeGrid(sql, colModel) {
+	function makeGrid(sql, colModel, params) {
 		if (grid) {
 			grid.jqGrid("GridDestroy");
 		}
@@ -51,6 +54,13 @@ flect.util.SQLGrid = function(setting) {
 		grid = $("<table/>").attr("id", setting.gridId);
 		pager = $("<div/>").attr("id", setting.gridId + "-pager");
 		div.append(grid).append(pager);
+		
+		var data = {
+			"sql" : sql
+		}
+		if (params && $.isArray(params) && params.length > 0) {
+			data["sql-param"] = JSON.stringify(params);
+		}
 		
 		var t;
 		grid.jqGrid({
@@ -62,9 +72,7 @@ flect.util.SQLGrid = function(setting) {
 			"rowNum" : 50,
 			"gridview" : true,
 			"sortable" : true,
-			"postData": {
-				"sql" : sql
-			},
+			"postData": data,
 			"rowList" : [10, 50, 100],
 			"rownumbers" : true,
 			"viewrecords" : true,

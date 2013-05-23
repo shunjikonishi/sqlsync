@@ -1,11 +1,17 @@
 package models;
 
 import java.io.File;
+import java.util.Date;
+import java.sql.Connection;
+import java.sql.Timestamp;
 import play.api.db.DB;
 import play.api.Play.current;
 import play.api.cache.Cache;
 import jp.co.flect.salesforce.SalesforceClient;
 import jp.co.flect.salesforce.SObjectDef;
+import jp.co.flect.salesforce.bulk.SQLSyncRequest;
+import jp.co.flect.salesforce.event.SQLSynchronizerListener;
+import jp.co.flect.salesforce.event.SQLSynchronizerEvent;
 
 import jp.co.flect.javascript.jqgrid.ColModel;
 import jp.co.flect.javascript.jqgrid.RdbColModelFactory;
@@ -41,7 +47,7 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 		meta.getObjectDefList.map(_.getName).toList;
 	}
 	
-	def validate(info: SqlInfo) = {
+	def validate(info: SqlInfo, update: Boolean) = {
 		def columnCheck(model: ColModel, obj: SObjectDef) = {
 			val notFound = model.getList.filter(c => obj.getField(c.getName) == null)
 				.map(_.getName);
@@ -63,7 +69,7 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 				.getOrElse(client.describeSObject(info.objectName));
 			if (info.name == "") {
 				new ValidationResult(true, "名前は必須です。");
-			} else if (!storage.get(info.name).isEmpty) {
+			} else if (!update && !storage.get(info.name).isEmpty) {
 				new ValidationResult(true, "名前が重複しています。: " + info.name);
 			} else if (objectDef == null) {
 				new ValidationResult(true, "オブジェクトが見つかりません。: " + info.objectName);
@@ -77,7 +83,47 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 				columnCheck(model, objectDef);
 			}
 		} catch {
-			case e: Exception => new ValidationResult(true, e.getMessage());
+			case e: Exception => 
+				e.printStackTrace();
+				new ValidationResult(true, e.getMessage());
+		}
+	}
+	
+	def execute(date: Date, info: SqlInfo) = {
+		val con = DB.getConnection();
+		val now = new Date();
+		val newInfo = info.update(date, now);
+		
+		val request = new SQLSyncRequest(con, info.sql, info.objectName);
+		storage.remove(info.name);
+		storage.add(newInfo);
+		
+		request.setExternalIdFieldName(info.externalIdFieldName);
+		request.setParams(new Timestamp(date.getTime));
+		request.addSQLSynchronizerListener(new MyListener(con, newInfo));
+		client.syncSQL(request);
+		
+		newInfo;
+	}
+	
+	private class MyListener(con: Connection, info: SqlInfo) extends SQLSynchronizerListener {
+		
+		import SQLSynchronizerEvent.EventType._;
+		
+		override def handleEvent(e: SQLSynchronizerEvent) {
+			println("Execute: " + info.name + ": " + e.getType);
+			val msg = if (e.getType == ERROR) {
+				e.getException().printStackTrace;
+				e.getException().toString;
+			} else {
+				"";
+			}
+			val newInfo = info.updateStatus(e.getType.toString, msg);
+			storage.remove(info.name);
+			storage.add(newInfo);
+			if (e.getType == ERROR || e.getType == MAKE_CSV || e.getType == NOT_PROCESSED) {
+				con.close;
+			}
 		}
 	}
 }

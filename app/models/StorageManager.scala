@@ -14,20 +14,22 @@ import com.mongodb.casbah.Imports.MongoDBObject;
 import play.api.Play;
 import play.api.Play.current;
 
-case class SqlInfo(name: String, sql: String, 
+case class SqlInfo(name: String, desc: String, sql: String, 
 	objectName: String, externalIdFieldName: String, 
-	prevExecuted: Date, lastExecuted: Date) {
+	prevExecuted: Date, lastExecuted: Date, status: String = "", message: String = "") {
 	
-	def update(d: Date) = new SqlInfo(name, sql, objectName, externalIdFieldName, lastExecuted, d);
+	def update(d: Date, now: Date) = new SqlInfo(name, desc, sql, objectName, externalIdFieldName, d, now);
+	def merge(oldInfo: SqlInfo) = new SqlInfo(name, desc, sql, objectName, externalIdFieldName, 
+		oldInfo.prevExecuted, oldInfo.lastExecuted, status, message);
+	def updateStatus(newStatus: String, newMessage: String) = new SqlInfo(name, desc, sql, 
+		objectName, externalIdFieldName, prevExecuted, lastExecuted, newStatus, newMessage);
 }
 
 trait StorageManager {
 	
-	
 	def list: List[SqlInfo];
 	def add(info: SqlInfo): Boolean;
-	def remove(info: SqlInfo): Boolean;
-	def update(info: SqlInfo): Boolean;
+	def remove(name: String): Boolean;
 	
 	def removeAll: Boolean;
 	
@@ -40,11 +42,14 @@ trait StorageManager {
 case class MongoSqlInfo(
 	@Key("_id") id: ObjectId = new ObjectId,
 	name: String,
+	desc: String,
 	sql: String,
 	objectName: String, 
 	externalIdFieldName: String, 
 	prevExecuted: Date,
-	lastExecuted: Date
+	lastExecuted: Date,
+	status: String,
+	message: String
 );	
 
 object MongoStorageManager {
@@ -66,36 +71,28 @@ class MongoStorageManager extends StorageManager {
 	val dao = new SalatDAO[MongoSqlInfo, ObjectId](mongoCollection("sqlInfo")) {}
 	
 	override def list = dao.find(MongoDBObject.empty).map { x =>
-		SqlInfo(x.name, x.sql, x.objectName, x.externalIdFieldName, x.prevExecuted, x.lastExecuted);
+		SqlInfo(x.name, x.desc, x.sql, x.objectName, x.externalIdFieldName, x.prevExecuted, x.lastExecuted, x.status, x.message);
 	}.toList;
 	
 	override def add(info: SqlInfo) = {
 		val obj = new MongoSqlInfo(
 			name = info.name, 
+			desc = info.desc,
 			sql = info.sql,
 			objectName = info.objectName,
 			externalIdFieldName = info.externalIdFieldName,
 			prevExecuted = info.prevExecuted,
-			lastExecuted = info.lastExecuted
+			lastExecuted = info.lastExecuted,
+			status = info.status,
+			message = info.message
 		);
 		dao.insert(obj);
 		true;
 	};
-	override def remove(info: SqlInfo) = {
-		dao.remove(MongoDBObject("name" -> info.name));
+	override def remove(name: String) = {
+		dao.remove(MongoDBObject("name" -> name));
 		true;
 	};
-	
-	override def update(info: SqlInfo) = {
-		dao.update(
-			MongoDBObject("name" -> info.name),
-			MongoDBObject(
-				"prevExecuted" -> info.prevExecuted,
-				"lastExecuted" -> info.lastExecuted
-			)
-		);
-		true;
-	}
 	
 	override def removeAll = {
 		dao.remove(MongoDBObject.empty);
