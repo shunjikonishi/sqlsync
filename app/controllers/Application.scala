@@ -118,7 +118,7 @@ println("Mode=" + mode);
 		val date = new Date();
 		val sm = Salesforce(man);
 		man.list.foreach { info =>
-			sm.execute(date, info);
+			sm.execute(info.lastExecuted, info);
 		}
 		Ok("OK");
 	}
