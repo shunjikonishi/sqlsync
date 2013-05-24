@@ -29,6 +29,7 @@ object Salesforce {
 		val client = Cache.getOrElse[SalesforceClient]("salesforce.cacheKey") {
 			val client = new SalesforceClient(new File(WSDL));
 			client.login(USERNAME, PASSWORD, SECRET);
+println("url = " + client.getEndpoint());
 			Cache.set("salesforce.cacheKey", client, 60 * 60);
 			client;
 		}
@@ -45,6 +46,11 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 	def listObjectNames = {
 		val meta = client.describeGlobal;
 		meta.getObjectDefList.map(_.getName).toList;
+	}
+	
+	def verifyPage = {
+		var endpoint = client.getEndpoint;
+		endpoint.substring(0, endpoint.indexOf("-api")) + ".salesforce.com/750";
 	}
 	
 	def validate(info: SqlInfo, update: Boolean) = {

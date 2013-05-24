@@ -142,7 +142,6 @@ flect.app.sqlsync.SqlSync = function(list) {
 		}),
 		btnSync = $("#btnSync").click(function() {
 			var data = formToHash();
-console.log("btnSync: " + JSON.stringify(data));
 			$.ajax({
 				"url" : "/sync/execute", 
 				"type" : "POST",

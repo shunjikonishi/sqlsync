@@ -20,7 +20,7 @@ case class SqlInfo(name: String, desc: String, sql: String,
 	
 	def update(d: Date, now: Date) = new SqlInfo(name, desc, sql, objectName, externalIdFieldName, d, now);
 	def merge(oldInfo: SqlInfo) = new SqlInfo(name, desc, sql, objectName, externalIdFieldName, 
-		oldInfo.prevExecuted, oldInfo.lastExecuted, status, message);
+		oldInfo.prevExecuted, oldInfo.lastExecuted, oldInfo.status, oldInfo.message);
 	def updateStatus(newStatus: String, newMessage: String) = new SqlInfo(name, desc, sql, 
 		objectName, externalIdFieldName, prevExecuted, lastExecuted, newStatus, newMessage);
 }

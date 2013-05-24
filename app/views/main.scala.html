@@ -1,4 +1,4 @@
-@(list: List[models.SqlInfo], oList: List[String])(implicit flash: Flash)
+@(list: List[models.SqlInfo], oList: List[String], verifyPage: String, scheduledTime: models.Schedule)
 
 @base("SQLsync") {
 <link rel="stylesheet" media="screen, print" href="@routes.Assets.at("javascripts/ext/bootstrap/css/bootstrap.min.css")">
@@ -83,32 +83,35 @@ $(document).ready(function() {
 				</tr>}
 			</tbody>
 		</table>
-		<button id="btnUpdate" class="btn btn-info" disabled>更新</button>
-		<button id="btnDelete" class="btn btn-info" disabled>削除</button>
+		<div>
+			<p>
+				<span>スケジュール時刻： @scheduledTime　　　<span>
+				<a href="@verifyPage" target="_blank">同期ジョブ状態確認</a>
+			</p>
+		</div>
 	</div>
 	<hr>
 	<div>
-		<button id="btnAdd" class="btn btn-info">追加</button>
 		<ul id="formList">
 			<li>
 				<label>名前</label>
-				<input class="sql-data" type="text" id="name" name="name" value="@flash.get("name")">
+				<input class="sql-data" type="text" id="name" name="name" value="">
 			</li>
 			<li>
 				<label>説明</label>
-				<input class="sql-data input-xxlarge" type="text" id="desc" name="desc" value="@flash.get("desc")">
+				<input class="sql-data input-xxlarge" type="text" id="desc" name="desc" value="">
 			</li>
 			<li>
 				<label>SQL</label>
-				<textarea class="sql-data input-xxlarge" id="sql" name="sql" cols="120" rows="10">@flash.get("sql")</textarea>
+				<textarea class="sql-data input-xxlarge" id="sql" name="sql" cols="120" rows="10"></textarea>
 			</li>
 			<li>
 				<label>オブジェクト名</label>
-				<select class="sql-data"  type="text" id="objectName" name="objectName">@oList.map{ s => <option value="@s" @flash.get("objectName").filter(_ == s).map(s=> "selected")>@s</option>}</select>
+				<select class="sql-data"  type="text" id="objectName" name="objectName">@oList.map{ s => <option value="@s">@s</option>}</select>
 			</li>
 			<li>
 				<label>外部ID</label>
-				<input class="sql-data" type="text" id="externalIdFieldName" name="externalIdFieldName" value="@flash.get("externalIdFieldName")">
+				<input class="sql-data" type="text" id="externalIdFieldName" name="externalIdFieldName" value="">
 			</li>
 			<li>
 				<label>対象日時</label>
@@ -116,9 +119,14 @@ $(document).ready(function() {
 			</li>
 		</ul>
 	</div>
-	<div>
+	<div style="margin-bottom:10px;">
+		<button id="btnAdd" class="btn btn-info">追加</button>
+		<button id="btnUpdate" class="btn btn-info" disabled>更新</button>
+		<button id="btnDelete" class="btn btn-info" disabled>削除</button>
+	</div>
+	<div style="margin-bottom:10px;">
 		<button id="btnSQL" class="btn btn-info">SQLテスト実行</button> 
-		<button id="btnSync" class="btn btn-info">同期実行</button> 
+		<button id="btnSync" class="btn btn-info" disabled>同期実行</button> 
 	</div>
 	<div id="error-msg" class="error">
 	</div>

@@ -10,6 +10,7 @@ import play.api.data.Form;
 import play.api.data.Forms.mapping;
 import play.api.data.Forms.text;
 
+import models.Schedule;
 import models.SqlInfo;
 import models.StorageManager;
 import models.Salesforce;
@@ -21,17 +22,17 @@ object Application extends Controller with AccessControl {
 	
 	private val man: StorageManager = new MongoStorageManager();
 	
-	private val mode = Option(System.getProperty("app.mode")).getOrElse("Unknown");
-println("Mode=" + mode);
-	
 	private lazy val objectList = {
 		Salesforce(man).listObjectNames;
 	}
 	
+	private val scheduledTime = Schedule(sys.env.get("SCHEDULE_TIME").getOrElse("00:00:00"));
+	
 	def main = filterAction { implicit request =>
 		val list = man.list;
 		val oList = objectList
-		Ok(views.html.main(list, oList))
+		val verifyPage = Salesforce(man).verifyPage;
+		Ok(views.html.main(list, oList, verifyPage, scheduledTime))
 	}
 	
 	private val form = Form(mapping(
@@ -114,13 +115,15 @@ println("Mode=" + mode);
 		}
 	}
 	
-	def executeAll = Action { implicit request =>
+	private def executeAll = {
 		val date = new Date();
 		val sm = Salesforce(man);
-		man.list.foreach { info =>
+		val list = man.list;
+		println("executeAll: date=" + date + ", count=" + list.size);
+		
+		list.foreach { info =>
 			sm.execute(info.lastExecuted, info);
 		}
-		Ok("OK");
 	}
 	
 	//Schedule Task
@@ -130,7 +133,13 @@ println("Mode=" + mode);
 	import play.api.libs.concurrent.Execution.Implicits.defaultContext;
 	import play.api.libs.ws.WS
 	
-	Akka.system.scheduler.schedule(0 seconds, 10 seconds) {
+	Akka.system.scheduler.schedule(0 seconds, 10 minutes) {
 		WS.url("http://flect-sqlsync.herokuapp.com/assets/ping.txt").get()
+	}
+	
+	Akka.system.scheduler.schedule(0 seconds, 10 seconds) {
+		if (scheduledTime.isScheduledTime) {
+			executeAll;
+		}
 	}
 }
