@@ -21,12 +21,11 @@ import utils.RequestUtils;
 object Application extends Controller with AccessControl {
 	
 	private val man: StorageManager = new MongoStorageManager();
+	val scheduledTime = Schedule(sys.env.get("SCHEDULE_TIME").getOrElse("00:00:00"));
 	
 	private lazy val objectList = {
 		Salesforce(man).listObjectNames;
 	}
-	
-	private val scheduledTime = Schedule(sys.env.get("SCHEDULE_TIME").getOrElse("00:00:00"));
 	
 	def main = filterAction { implicit request =>
 		val list = man.list;
@@ -115,7 +114,7 @@ object Application extends Controller with AccessControl {
 		}
 	}
 	
-	private def executeAll = {
+	def executeAll = {
 		val date = new Date();
 		val sm = Salesforce(man);
 		val list = man.list;
@@ -126,20 +125,4 @@ object Application extends Controller with AccessControl {
 		}
 	}
 	
-	//Schedule Task
-	import play.api.libs.concurrent.Akka;
-	import play.api.Play.current;
-	import scala.concurrent.duration.DurationInt;
-	import play.api.libs.concurrent.Execution.Implicits.defaultContext;
-	import play.api.libs.ws.WS
-	
-	Akka.system.scheduler.schedule(0 seconds, 10 minutes) {
-		WS.url("http://flect-sqlsync.herokuapp.com/assets/ping.txt").get()
-	}
-	
-	Akka.system.scheduler.schedule(0 seconds, 10 seconds) {
-		if (scheduledTime.isScheduledTime) {
-			executeAll;
-		}
-	}
 }
