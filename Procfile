@@ -1,1 +1,1 @@
-web: target/start -Dhttp.port=${PORT} -Dapp.mode=hoge ${JAVA_OPTS}
+web: target/start -Dhttp.port=${PORT} -Duser.timezone=Asia/Tokyo ${JAVA_OPTS}
