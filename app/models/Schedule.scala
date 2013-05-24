@@ -34,7 +34,7 @@ class Schedule(storage: StorageManager, scheduledTime: String) {
 	def isScheduledTime = {
 		val lastExecuted = storage.getDate("lastExecuted");
 		val now = Calendar.getInstance
-		if (now.getTimeInMillis - lastExecuted.getTime < 24 * 60 * 60 * 1000) {
+		if (now.getTimeInMillis - lastExecuted.getTime < 12 * 60 * 60 * 1000) {
 			false;
 		} else {
 			val time1 = strToTime(scheduledTime);
