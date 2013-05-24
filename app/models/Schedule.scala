@@ -24,16 +24,15 @@ object Schedule {
 		cal.get(Calendar.SECOND);
 	}
 	
-	def apply(str: String) = new Schedule(str);
+	def apply(storage: StorageManager, str: String) = new Schedule(storage, str);
 }
 
-class Schedule(scheduledTime: String) {
+class Schedule(storage: StorageManager, scheduledTime: String) {
 	
 	import Schedule._;
 	
-	private var lastExecuted: Date = new Date(0);
-	
 	def isScheduledTime = {
+		val lastExecuted = storage.getDate("lastExecuted");
 		val now = Calendar.getInstance
 		if (now.getTimeInMillis - lastExecuted.getTime < 24 * 60 * 60 * 1000) {
 			false;
@@ -41,7 +40,7 @@ class Schedule(scheduledTime: String) {
 			val time1 = strToTime(scheduledTime);
 			val time2 = calendarToTime(now);
 			if (time2 > time1) {
-				lastExecuted = now.getTime;
+				storage.setDate("lastExecuted", now.getTime);
 				true;
 			} else {
 				false;

@@ -37,6 +37,8 @@ trait StorageManager {
 		list.filter(_.name == name).headOption;
 	}
 	
+	def getDate(key: String): Date;
+	def setDate(key: String, date: Date): Unit;
 }
 
 case class MongoSqlInfo(
@@ -51,6 +53,12 @@ case class MongoSqlInfo(
 	status: String,
 	message: String
 );	
+
+case class MongoDateInfo(
+	@Key("_id") id : ObjectId = new ObjectId,
+	key: String,
+	date: Date
+);
 
 object MongoStorageManager {
 	
@@ -69,6 +77,7 @@ class MongoStorageManager extends StorageManager {
 	import MongoStorageManager._;
 	
 	val dao = new SalatDAO[MongoSqlInfo, ObjectId](mongoCollection("sqlInfo")) {}
+	val dao2 = new SalatDAO[MongoDateInfo, ObjectId](mongoCollection("dateInfo")) {}
 	
 	override def list = dao.find(MongoDBObject.empty).map { x =>
 		SqlInfo(x.name, x.desc, x.sql, x.objectName, x.externalIdFieldName, x.prevExecuted, x.lastExecuted, x.status, x.message);
@@ -97,6 +106,16 @@ class MongoStorageManager extends StorageManager {
 	override def removeAll = {
 		dao.remove(MongoDBObject.empty);
 		true;
+	}
+	
+	override def getDate(key: String) = {
+		dao2.find(MongoDBObject.empty).filter( _.key == key)
+			.toList.map(_.date).headOption.getOrElse(new Date(0));
+	}
+	
+	override def setDate(key: String, date: Date): Unit = {
+		dao2.remove(MongoDBObject("key" -> key));
+		dao2.insert(MongoDateInfo(key=key, date=date));
 	}
 }
 
