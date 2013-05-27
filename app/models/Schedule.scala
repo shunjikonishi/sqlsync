@@ -39,6 +39,7 @@ class Schedule(storage: StorageManager, scheduledTime: String) {
 		} else {
 			val time1 = strToTime(scheduledTime);
 			val time2 = calendarToTime(now);
+println("isScheduledTime: " + scheduledTime + ", " + now + ", " + time1 + ", " + time2 + ", " + (time2 > time1));
 			if (time2 > time1) {
 				storage.setDate("lastExecuted", now.getTime);
 				true;
