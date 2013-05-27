@@ -26,7 +26,7 @@ object ApplicationBuild extends Build {
   val main = play.Project(appName, appVersion, appDependencies).settings(
     // Add your own project settings here      
     resolvers += "Typesafe Repository 2" at "http://repo.typesafe.com/typesafe/repo/",
-    resolvers += "FLECT Repository" at "http://shunjikonishi.github.io/maven-repo/"
+    resolvers += "FLECT Repository" at "http://flect.github.io/maven-repo/"
   )
 
 }

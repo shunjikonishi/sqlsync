@@ -29,7 +29,6 @@ object Salesforce {
 		val client = Cache.getOrElse[SalesforceClient]("salesforce.cacheKey") {
 			val client = new SalesforceClient(new File(WSDL));
 			client.login(USERNAME, PASSWORD, SECRET);
-println("url = " + client.getEndpoint());
 			Cache.set("salesforce.cacheKey", client, 60 * 60);
 			client;
 		}

@@ -2,7 +2,7 @@ if (typeof(flect) == "undefined") flect = {};
 if (typeof(flect.app) == "undefined") flect.app = {};
 if (typeof(flect.app.sqlsync) == "undefined") flect.app.sqlsync = {};
 
-flect.app.sqlsync.SqlSync = function(list) {
+flect.app.sqlsync.SqlSync = function(scheduledTime) {
 	function strToDate(str) {
 		var y = parseInt(str.substring(0, 4)),
 			m = parseInt(str.substring(5, 7)),
@@ -157,7 +157,28 @@ flect.app.sqlsync.SqlSync = function(list) {
 					error(xhr.responseText);
 				}
 			});
-		});
+		}),
+		btnSync = $("#btnSchedule").click(function() {
+			var time = selSchedule.val();
+			$.ajax({
+				"url" : "/sync/setScheduleTime", 
+				"type" : "POST",
+				"data" : {
+					"scheduledTime" : time
+				},
+				"success" : function(data) {
+					if (data == "OK") {
+						location.reload();
+					} else {
+						error(data);
+					}
+				},
+				"error" : function(xhr) {
+					error(xhr.responseText);
+				}
+			});
+		}),
+		selSchedule = $("#scheduledTime");
 	
 	$(".sql-data").change(function() {
 		btnSync.attr("disabled", "disabled");
@@ -173,4 +194,5 @@ flect.app.sqlsync.SqlSync = function(list) {
 		var idx = tr.parent().find("tr").index(tr);
 		setCurrentSqlInfo(new SQLInfo(idx, tr));
 	});
+	selSchedule.val(scheduledTime);
 }

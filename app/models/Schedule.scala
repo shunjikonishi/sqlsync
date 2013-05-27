@@ -27,26 +27,49 @@ object Schedule {
 	def apply(storage: StorageManager, str: String) = new Schedule(storage, str);
 }
 
-class Schedule(storage: StorageManager, scheduledTime: String) {
+class Schedule(storage: StorageManager, var scheduledTime: String) {
 	
 	import Schedule._;
 	
-	def isScheduledTime = {
-		val lastExecuted = storage.getDate("lastExecuted");
+	private def isScheduledTime = {
 		val now = Calendar.getInstance
-		if (now.getTimeInMillis - lastExecuted.getTime < 1 * 60 * 60 * 1000) {
-			false;
-		} else {
-			val time1 = strToTime(scheduledTime);
-			val time2 = calendarToTime(now);
-println("isScheduledTime: " + scheduledTime + ", " + now + ", " + time1 + ", " + time2 + ", " + (time2 > time1));
-			if (time2 > time1) {
-				storage.setDate("lastExecuted", now.getTime);
-				true;
-			} else {
-				false;
+		val time1 = strToTime(scheduledTime);
+		val time2 = calendarToTime(now);
+		Math.abs(time2 - time1) < 10;
+	}
+	
+	def calcNextSchedule = {
+		val cal = Calendar.getInstance
+		val time1 = strToTime(scheduledTime);
+		val time2 = calendarToTime(cal);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.add(Calendar.SECOND, time1);
+		if (time1 < time2) {
+			cal.add(Calendar.DAY_OF_MONTH, 1);
+		}
+		
+		import play.api.libs.concurrent.Akka;
+		import play.api.Play.current;
+		import scala.concurrent.duration.FiniteDuration;
+		import java.util.concurrent.TimeUnit;
+		import play.api.libs.concurrent.Execution.Implicits.defaultContext;
+		
+		val duration = new FiniteDuration(cal.getTimeInMillis - System.currentTimeMillis, TimeUnit.MILLISECONDS);
+		Akka.system.scheduler.scheduleOnce(duration) {
+			if (isScheduledTime) {
+				val date = new Date();
+				val salesforce = Salesforce(storage);
+				val list = storage.list;
+				println("executeAll: date=" + date + ", count=" + list.size);
+				list.foreach { info =>
+					salesforce.execute(info.lastExecuted, info);
+				}
 			}
 		}
+		cal.getTime;
 	}
 	override def toString = scheduledTime;
 }

@@ -2,6 +2,8 @@ package models;
 
 
 import java.util.Date;
+import java.util.Calendar;
+import java.text.DecimalFormat;
 import se.radley.plugin.salat.Binders.ObjectId;
 import se.radley.plugin.salat.mongoCollection;
 import com.novus.salat.annotations.Key;
@@ -39,6 +41,28 @@ trait StorageManager {
 	
 	def getDate(key: String): Date;
 	def setDate(key: String, date: Date): Unit;
+	
+	def getScheduledTime = {
+		val cal = Calendar.getInstance;
+		cal.setTime(getDate("scheduledTime"));
+		val h = cal.get(Calendar.HOUR_OF_DAY);
+		val m = cal.get(Calendar.MINUTE);
+		val s = cal.get(Calendar.SECOND);
+		
+		val fmt = new DecimalFormat("00");
+		fmt.format(h) + ":" + fmt.format(m) + ":" + fmt.format(s);
+	}
+	
+	def setScheduledTime(time: String) = {
+		val cal = Calendar.getInstance;
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.add(Calendar.SECOND, Schedule.strToTime(time));
+		
+		setDate("scheduledTime", cal.getTime);
+	}
 }
 
 case class MongoSqlInfo(

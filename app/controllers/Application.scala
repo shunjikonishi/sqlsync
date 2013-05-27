@@ -21,7 +21,7 @@ import utils.RequestUtils;
 object Application extends Controller with AccessControl {
 	
 	private val man: StorageManager = new MongoStorageManager();
-	val scheduledTime = Schedule(man, sys.env.get("SCHEDULE_TIME").getOrElse("01:00:00"));
+	val scheduledTime = Schedule(man, man.getScheduledTime);
 	println("onStart - scheduled=" + scheduledTime + ", lastExecuted" + man.getDate("lastExecuted"));
 	
 	private lazy val objectList = {
@@ -115,15 +115,12 @@ object Application extends Controller with AccessControl {
 		}
 	}
 	
-	def executeAll = {
-		val date = new Date();
-		val sm = Salesforce(man);
-		val list = man.list;
-		println("executeAll: date=" + date + ", count=" + list.size);
-		
-		list.foreach { info =>
-			sm.execute(info.lastExecuted, info);
-		}
+	def setScheduleTime = filterAction { implicit request => 
+		val time = RequestUtils.getPostParam("scheduledTime").get
+		man.setScheduledTime(time);
+		scheduledTime.scheduledTime = time;
+		println("Next schedule=" + scheduledTime.calcNextSchedule);
+		Ok("OK");
 	}
 	
 }

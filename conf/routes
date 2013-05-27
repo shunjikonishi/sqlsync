@@ -8,6 +8,7 @@ POST    /sync/add                   controllers.Application.add
 POST    /sync/update                controllers.Application.update
 POST    /sync/delete                controllers.Application.delete
 POST    /sync/execute               controllers.Application.execute
+POST    /sync/setScheduleTime       controllers.Application.setScheduleTime
 POST    /sql/model                  controllers.MySelectTool.colModel
 POST    /sql/data                   controllers.MySelectTool.data
 

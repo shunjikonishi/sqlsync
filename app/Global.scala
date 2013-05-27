@@ -13,12 +13,7 @@ object Global extends GlobalSettings {
 		Akka.system.scheduler.schedule(0 seconds, 10 minutes) {
 			WS.url("http://flect-sqlsync.herokuapp.com/assets/ping.txt").get()
 		}
-		
-		Akka.system.scheduler.schedule(0 seconds, 10 seconds) {
-			if (controllers.Application.scheduledTime.isScheduledTime) {
-				controllers.Application.executeAll;
-			}
-		}
+		println("Next schedule=" + controllers.Application.scheduledTime.calcNextSchedule);
 	}
 	
 }
