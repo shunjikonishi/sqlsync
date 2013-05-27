@@ -23,7 +23,7 @@ object Salesforce {
 	private val USERNAME = sys.env("SALESFORCE_USERNAME");
 	private val PASSWORD = sys.env("SALESFORCE_PASSWORD");
 	private val SECRET   = sys.env("SALESFORCE_SECRET");
-	private val WSDL     = sys.env("SALESFORCE_WSDL");
+	private val WSDL     = sys.env.get("SALESFORCE_WSDL").getOrElse("conf/salesforce/partner.wsdl");
 	
 	def apply(storage: StorageManager) = {
 		val client = Cache.getOrElse[SalesforceClient]("salesforce.cacheKey") {

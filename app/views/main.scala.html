@@ -8,6 +8,9 @@
 body {
 	padding: 40px;
 }
+.navbar-inverse .brand {
+  color: #FFFFFF;
+}
 .error {
 	color: red;
 	margin-top: 20px;
@@ -48,7 +51,10 @@ $(document).ready(function() {
 <div id="header" class="navbar navbar-inverse navbar-fixed-top">
 	<div class="navbar-inner">
 		<div class="container-fluid">
-			<span class="brand">SQLSync</span>
+			<span class="brand" class="active">SQLSync</span>
+			<ul class="nav">
+				<li><a href="@routes.Assets.at("ja/manual.html")">使い方</a></li>
+			</ul>
 		</div>
 	</div>
 </div>
@@ -170,9 +176,9 @@ $(document).ready(function() {
 		</ul>
 	</div>
 	<div style="margin-bottom:10px;">
-		<button id="btnAdd" class="btn btn-info">追加</button>
 		<button id="btnUpdate" class="btn btn-info" disabled>更新</button>
 		<button id="btnDelete" class="btn btn-info" disabled>削除</button>
+		<button id="btnAdd" class="btn btn-info" style="margin-left:550px;">新規登録</button>
 	</div>
 	<div style="margin-bottom:10px;">
 		<button id="btnSQL" class="btn btn-info">SQLテスト実行</button> 
