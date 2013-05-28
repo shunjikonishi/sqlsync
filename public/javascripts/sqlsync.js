@@ -158,7 +158,7 @@ flect.app.sqlsync.SqlSync = function(scheduledTime) {
 				}
 			});
 		}),
-		btnSync = $("#btnSchedule").click(function() {
+		btnSchedule = $("#btnSchedule").click(function() {
 			var time = selSchedule.val();
 			$.ajax({
 				"url" : "/sync/setScheduleTime", 

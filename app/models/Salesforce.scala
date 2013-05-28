@@ -22,12 +22,21 @@ object Salesforce {
 	
 	private val USERNAME = sys.env("SALESFORCE_USERNAME");
 	private val PASSWORD = sys.env("SALESFORCE_PASSWORD");
-	private val SECRET   = sys.env("SALESFORCE_SECRET");
+	private val SECRET   = sys.env.get("SALESFORCE_SECRET").getOrElse("");
 	private val WSDL     = sys.env.get("SALESFORCE_WSDL").getOrElse("conf/salesforce/partner.wsdl");
+	
+	private val PROXY_HOST = sys.env.get("PROXY_HOST");
+	private val PROXY_PORT = sys.env.get("PROXY_PORT").map(_.toInt).getOrElse(80);
+	private val PROXY_USERNAME = sys.env.get("PROXY_USERNAME").getOrElse(null);
+	private val PROXY_PASSWORD = sys.env.get("PROXY_PASSWORD").getOrElse(null);
 	
 	def apply(storage: StorageManager) = {
 		val client = Cache.getOrElse[SalesforceClient]("salesforce.cacheKey") {
 			val client = new SalesforceClient(new File(WSDL));
+//client.getLogger().setLevel(jp.co.flect.log.Logger.LEVEL_TRACE);
+			PROXY_HOST.foreach { s =>
+				client.setProxyInfo(s, PROXY_PORT, PROXY_USERNAME, PROXY_PASSWORD);
+			};
 			client.login(USERNAME, PASSWORD, SECRET);
 			Cache.set("salesforce.cacheKey", client, 60 * 60);
 			client;
@@ -48,8 +57,12 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 	}
 	
 	def verifyPage = {
-		var endpoint = client.getEndpoint;
-		endpoint.substring(0, endpoint.indexOf("-api")) + ".salesforce.com/750";
+		val endpoint = client.getEndpoint;
+		if (endpoint.indexOf("-api") != -1) {
+			endpoint.substring(0, endpoint.indexOf("-api")) + ".salesforce.com/750";
+		} else {
+			endpoint.substring(0, endpoint.indexOf("/", 9)) + "/750";
+		}
 	}
 	
 	def validate(info: SqlInfo, update: Boolean) = {
