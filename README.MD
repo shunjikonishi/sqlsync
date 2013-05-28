@@ -53,7 +53,6 @@ IP制限によりSalesforceへの接続にProxyを使用する場合はさらに
 -- 「xxx.xxx.xxx.0/24」のようなサブネット表記での指定も可能です。
 - BASIC_AUTHENTICATION: 設定するとアクセスにBasic認証が要求されるようになります。
 
-
 License
 -------
 MIT
