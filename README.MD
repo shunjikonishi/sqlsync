@@ -8,6 +8,12 @@ Overview
 
 Install
 -------
+このアプリケーションはPlayframework2で開発されており、実行のためには以下の環境が必要です。
+
+- RDBMS(同期対象のデータが保存されているRDBMS)
+- Salesforce(同期対象のSalesforce)
+- MongoDB(設定情報の保存用)
+
     git clone git@github.com:shunjikonishi/sqlsync.git
     heroku create
     git push heroku master
