@@ -59,6 +59,9 @@ flect.app.sqlsync.SqlSync = function(scheduledTime) {
 	function error(str) {
 		$("#error-msg").html(str);
 	}
+	function disableSync() {
+		btnSync.attr("disabled", "disabled");
+	}
 	
 	var currentSqlInfo = null,
 		grid = new flect.util.SQLGrid({
@@ -180,9 +183,12 @@ flect.app.sqlsync.SqlSync = function(scheduledTime) {
 		}),
 		selSchedule = $("#scheduledTime");
 	
-	$(".sql-data").change(function() {
-		btnSync.attr("disabled", "disabled");
-	});
+	$("#name").change(disableSync);
+	$("#desc").change(disableSync);
+	$("#sql").change(disableSync);
+	$("#objectName").change(disableSync);
+	$("#externalIdFieldName").change(disableSync);
+	$(".sql-data").change(disableSync);
 	$("#sql-datetime").datetimepicker({
 		"dateFormat" : "yy-mm-dd",
 		"timeFormat" : "HH:mm:ss"

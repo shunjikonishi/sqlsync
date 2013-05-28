@@ -33,7 +33,6 @@ object Salesforce {
 	def apply(storage: StorageManager) = {
 		val client = Cache.getOrElse[SalesforceClient]("salesforce.cacheKey") {
 			val client = new SalesforceClient(new File(WSDL));
-//client.getLogger().setLevel(jp.co.flect.log.Logger.LEVEL_TRACE);
 			PROXY_HOST.foreach { s =>
 				client.setProxyInfo(s, PROXY_PORT, PROXY_USERNAME, PROXY_PASSWORD);
 			};
@@ -129,7 +128,7 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 		import SQLSynchronizerEvent.EventType._;
 		
 		override def handleEvent(e: SQLSynchronizerEvent) {
-			println("Execute: " + info.name + ": " + e.getType);
+			println("BulkStatus: " + info.name + ": " + e.getType);
 			val msg = if (e.getType == ERROR) {
 				e.getException().printStackTrace;
 				e.getException().toString;
