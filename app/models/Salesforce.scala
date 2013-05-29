@@ -66,8 +66,14 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 	
 	def validate(info: SqlInfo, update: Boolean) = {
 		def columnCheck(model: ColModel, obj: SObjectDef) = {
-			val notFound = model.getList.filter(c => obj.getField(c.getName) == null)
-				.map(_.getName);
+			val notFound = model.getList.filter{ c => 
+				val names = c.getName.split("\\.");
+				names.length match {
+					case 1 => obj.getField(names(0)) == null;
+					case 2 => obj.getSingleRelation(names(0)) == null;
+					case _ => true;
+				}
+			}.map(_.getName);
 			if (notFound.size == 0) {
 				new ValidationResult(false, null);
 			} else {
