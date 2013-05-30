@@ -37,7 +37,8 @@ object Salesforce {
 				client.setProxyInfo(s, PROXY_PORT, PROXY_USERNAME, PROXY_PASSWORD);
 			};
 			client.login(USERNAME, PASSWORD, SECRET);
-			Cache.set("salesforce.cacheKey", client, 60 * 60);
+			Cache.set("salesforce.cacheKey", client, 10 * 60);
+			println("Create SalesforceClient: " + new Date());
 			client;
 		}
 		new Salesforce(storage, client);

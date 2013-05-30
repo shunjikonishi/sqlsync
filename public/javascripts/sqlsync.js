@@ -91,20 +91,22 @@ flect.app.sqlsync.SqlSync = function(scheduledTime) {
 			grid.execute(sql, params);
 		}),
 		btnDelete = $("#btnDelete").click(function() {
-			var name = currentSqlInfo.name;
-			$.ajax({
-				"url" : "/sync/delete", 
-				"type" : "POST",
-				"data" : {
-					"name" : name
-				},
-				"success" : function(data) {
-					location.reload();
-				},
-				"error" : function(xhr) {
-					error(xhr.responseText);
-				}
-			});
+			if (confirm("削除しますか？")) {
+				var name = currentSqlInfo.name;
+				$.ajax({
+					"url" : "/sync/delete", 
+					"type" : "POST",
+					"data" : {
+						"name" : name
+					},
+					"success" : function(data) {
+						location.reload();
+					},
+					"error" : function(xhr) {
+						error(xhr.responseText);
+					}
+				});
+			}
 		}),
 		btnUpdate = $("#btnUpdate").click(function() {
 			var data = formToHash();
