@@ -31,13 +31,12 @@ object Salesforce {
 	private val PROXY_PASSWORD = sys.env.get("PROXY_PASSWORD").getOrElse(null);
 	
 	def apply(storage: StorageManager) = {
-		val client = Cache.getOrElse[SalesforceClient]("salesforce.cacheKey") {
+		val client = Cache.getOrElse[SalesforceClient]("salesforce.cacheKey", 60 * 60) {
 			val client = new SalesforceClient(new File(WSDL));
 			PROXY_HOST.foreach { s =>
 				client.setProxyInfo(s, PROXY_PORT, PROXY_USERNAME, PROXY_PASSWORD);
 			};
 			client.login(USERNAME, PASSWORD, SECRET);
-			Cache.set("salesforce.cacheKey", client, 10 * 60);
 			println("Create SalesforceClient: " + new Date());
 			client;
 		}

@@ -79,13 +79,12 @@ trait SelectTool extends Controller {
 	private def getSQLandModel(implicit request: Request[AnyContent]) = {
 		RequestUtils.getPostParam("sql") match {
 			case Some(sql) =>
-				val model = Cache.getOrElse[ColModel](sql) {
+				val model = Cache.getOrElse[ColModel](sql, CACHE_DURATION) {
 					DB.withConnection { con =>
 						val factory = new RdbColModelFactory(con);
 						factory.getQueryModel(sql);
 					}
 				}
-				Cache.set(sql, model, CACHE_DURATION);
 				(sql, model);
 			case None => throw new SQLException("SQL not specified");
 		}
