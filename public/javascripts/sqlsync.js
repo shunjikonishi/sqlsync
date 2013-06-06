@@ -2,7 +2,7 @@ if (typeof(flect) == "undefined") flect = {};
 if (typeof(flect.app) == "undefined") flect.app = {};
 if (typeof(flect.app.sqlsync) == "undefined") flect.app.sqlsync = {};
 
-flect.app.sqlsync.SqlSync = function(scheduledTime) {
+flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 	function strToDate(str) {
 		var y = parseInt(str.substring(0, 4)),
 			m = parseInt(str.substring(5, 7)),
@@ -242,6 +242,7 @@ flect.app.sqlsync.SqlSync = function(scheduledTime) {
 				"url" : "/sync/sort", 
 				"type" : "POST",
 				"data" : {
+					"dragName" : dragName,
 					"sortNames" : names
 				},
 				"success" : function(data) {
@@ -257,4 +258,10 @@ flect.app.sqlsync.SqlSync = function(scheduledTime) {
 			});
 		}
 	});
+	if (dragged) {
+		var tr = table.find("tr[data-name='" + dragged + "']");
+//		tr.hide().show("slide", {"direction" : "left"});
+		tr.hide().fadeTo("slow", "0.5");
+	}
+	
 }

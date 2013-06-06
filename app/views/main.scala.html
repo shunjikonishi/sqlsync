@@ -1,4 +1,4 @@
-@(list: List[models.SqlInfo], oList: List[String], verifyPage: String, scheduledTime: models.Schedule)
+@(list: List[models.SqlInfo], oList: List[String], verifyPage: String, scheduledTime: models.Schedule, dragged: String)
 
 @base("SQLsync") {
 <link rel="stylesheet" media="screen, print" href="@routes.Assets.at("javascripts/ext/bootstrap/css/bootstrap.min.css")">
@@ -46,7 +46,8 @@ var app;
 $(document).ready(function() {
 	$.fn.button.noConflict();
 	var scheduledTime = "@scheduledTime";
-	app = new flect.app.sqlsync.SqlSync(scheduledTime);
+	var dragged = "@dragged";
+	app = new flect.app.sqlsync.SqlSync(scheduledTime, dragged);
 });
 </script>
 <div id="header" class="navbar navbar-inverse navbar-fixed-top">
@@ -77,7 +78,7 @@ $(document).ready(function() {
 			</thead>
 			<tbody>
 				@list.map{ obj =>
-				<tr class="sqlinfo" data-sql="@obj.sql" data-seqNo="@obj.seqNo">
+				<tr class="sqlinfo" data-sql="@obj.sql" data-seqNo="@obj.seqNo" data-name="@obj.name">
 					<td>@obj.name</td>
 					<td>@obj.desc</td>
 					<td>@obj.objectName</td>

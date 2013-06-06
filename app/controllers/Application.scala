@@ -33,7 +33,8 @@ object Application extends Controller with AccessControl {
 		val list = man.list;
 		val oList = objectList
 		val verifyPage = Salesforce(man).verifyPage;
-		Ok(views.html.main(list, oList, verifyPage, scheduledTime))
+		val dragged = request.flash.get("dragName").getOrElse("");
+		Ok(views.html.main(list, oList, verifyPage, scheduledTime, dragged))
 	}
 	
 	private val form = Form(mapping(
@@ -127,9 +128,10 @@ object Application extends Controller with AccessControl {
 	
 	def sort = filterAction { implicit request =>
 		try {
+			val dragName = RequestUtils.getPostParam("dragName").get
 			val names = RequestUtils.getPostParams("sortNames");
 			man.sort(names);
-			Ok("OK");
+			Ok("OK").flashing("dragName" -> dragName);
 		} catch {
 			case e: Exception => Ok(e.toString);
 		}
