@@ -33,6 +33,7 @@ flect.app.sqlsync.SqlSync = function(scheduledTime) {
 		this.lastExecuted = strToDate(tr.find("td:eq(4)").text());
 		this.nextExecute = strToDate(tr.find("td:eq(5)").text());
 		this.sql = tr.attr("data-sql");
+		this.seqNo = tr.attr("data-seqNo");
 	}
 	function setCurrentSqlInfo(info) {
 		currentSqlInfo = info;
@@ -55,6 +56,9 @@ flect.app.sqlsync.SqlSync = function(scheduledTime) {
 			ret[name] = value;
 		});
 		return ret;
+	}
+	function getRecordCount() {
+		return $("#sql-table").find("tbody").find("tr").length;
 	}
 	function error(str) {
 		$("#error-msg").html(str);
@@ -111,6 +115,7 @@ flect.app.sqlsync.SqlSync = function(scheduledTime) {
 		btnUpdate = $("#btnUpdate").click(function() {
 			var data = formToHash();
 			data.oldName = currentSqlInfo.name;
+			data.seqNo = currentSqlInfo.seqNo;
 			$.ajax({
 				"url" : "/sync/update", 
 				"type" : "POST",
@@ -129,6 +134,7 @@ flect.app.sqlsync.SqlSync = function(scheduledTime) {
 		}),
 		btnAdd = $("#btnAdd").click(function() {
 			var data = formToHash();
+			data.seqNo = getRecordCount() + 1;
 			$.ajax({
 				"url" : "/sync/add", 
 				"type" : "POST",

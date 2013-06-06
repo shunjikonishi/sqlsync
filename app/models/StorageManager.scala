@@ -18,13 +18,13 @@ import play.api.Play.current;
 
 case class SqlInfo(name: String, desc: String, sql: String, 
 	objectName: String, externalIdFieldName: String, 
-	prevExecuted: Date, lastExecuted: Date, status: String = "", message: String = "") {
+	prevExecuted: Date, lastExecuted: Date, status: String = "", message: String = "", seqNo: Int) {
 	
-	def update(d: Date, now: Date) = new SqlInfo(name, desc, sql, objectName, externalIdFieldName, d, now);
+	def update(d: Date, now: Date) = new SqlInfo(name, desc, sql, objectName, externalIdFieldName, d, now, seqNo=seqNo);
 	def merge(oldInfo: SqlInfo) = new SqlInfo(name, desc, sql, objectName, externalIdFieldName, 
-		oldInfo.prevExecuted, oldInfo.lastExecuted, oldInfo.status, oldInfo.message);
+		oldInfo.prevExecuted, oldInfo.lastExecuted, oldInfo.status, oldInfo.message, oldInfo.seqNo);
 	def updateStatus(newStatus: String, newMessage: String) = new SqlInfo(name, desc, sql, 
-		objectName, externalIdFieldName, prevExecuted, lastExecuted, newStatus, newMessage);
+		objectName, externalIdFieldName, prevExecuted, lastExecuted, newStatus, newMessage, seqNo);
 }
 
 trait StorageManager {
@@ -75,7 +75,8 @@ case class MongoSqlInfo(
 	prevExecuted: Date,
 	lastExecuted: Date,
 	status: String,
-	message: String
+	message: String,
+	seqNo: Option[Int]
 );	
 
 case class MongoDateInfo(
@@ -104,8 +105,8 @@ class MongoStorageManager extends StorageManager {
 	val dao2 = new SalatDAO[MongoDateInfo, ObjectId](mongoCollection("dateInfo")) {}
 	
 	override def list = dao.find(MongoDBObject.empty).map { x =>
-		SqlInfo(x.name, x.desc, x.sql, x.objectName, x.externalIdFieldName, x.prevExecuted, x.lastExecuted, x.status, x.message);
-	}.toList;
+		SqlInfo(x.name, x.desc, x.sql, x.objectName, x.externalIdFieldName, x.prevExecuted, x.lastExecuted, x.status, x.message, x.seqNo.getOrElse(0));
+	}.toList.sortBy(_.seqNo);
 	
 	override def add(info: SqlInfo) = {
 		val obj = new MongoSqlInfo(
@@ -117,11 +118,13 @@ class MongoStorageManager extends StorageManager {
 			prevExecuted = info.prevExecuted,
 			lastExecuted = info.lastExecuted,
 			status = info.status,
-			message = info.message
+			message = info.message,
+			seqNo = Some(info.seqNo)
 		);
 		dao.insert(obj);
 		true;
 	};
+	
 	override def remove(name: String) = {
 		dao.remove(MongoDBObject("name" -> name));
 		true;
@@ -141,5 +144,6 @@ class MongoStorageManager extends StorageManager {
 		dao2.remove(MongoDBObject("key" -> key));
 		dao2.insert(MongoDateInfo(key=key, date=date));
 	}
+	
 }
 

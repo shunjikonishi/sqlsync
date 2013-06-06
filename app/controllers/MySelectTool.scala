@@ -12,4 +12,8 @@ object MySelectTool extends SelectTool with AccessControl {
 	override def colModel = filterAction { implicit request =>
 		super.colModel(request);
 	}
+	
+	override def data = filterAction { implicit request =>
+		super.data(request);
+	}
 }

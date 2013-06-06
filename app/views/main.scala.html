@@ -77,7 +77,7 @@ $(document).ready(function() {
 			</thead>
 			<tbody>
 				@list.map{ obj =>
-				<tr class="sqlinfo" data-sql="@obj.sql">
+				<tr class="sqlinfo" data-sql="@obj.sql" data-seqNo="@obj.seqNo">
 					<td>@obj.name</td>
 					<td>@obj.desc</td>
 					<td>@obj.objectName</td>

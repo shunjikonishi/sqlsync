@@ -9,6 +9,7 @@ import play.api.db.DB;
 import play.api.data.Form;
 import play.api.data.Forms.mapping;
 import play.api.data.Forms.text;
+import play.api.data.Forms.number;
 
 import models.Schedule;
 import models.SqlInfo;
@@ -40,9 +41,10 @@ object Application extends Controller with AccessControl {
 		"desc" -> text,
 		"sql" -> text,
 		"objectName" -> text,
-		"externalIdFieldName" -> text
-	){ (name, desc, sql, objectName, externalIdFieldName) => SqlInfo(name, desc, sql, objectName, externalIdFieldName, new Date(0), new Date(0))}
-	 { info => Some(info.name, info.desc, info.sql, info.objectName, info.externalIdFieldName)}
+		"externalIdFieldName" -> text,
+		"seqNo" -> number
+	){ (name, desc, sql, objectName, externalIdFieldName, seqNo) => SqlInfo(name, desc, sql, objectName, externalIdFieldName, new Date(0), new Date(0), seqNo=seqNo)}
+	 { info => Some(info.name, info.desc, info.sql, info.objectName, info.externalIdFieldName, info.seqNo)}
 	);
 	
 	
