@@ -63,6 +63,15 @@ trait StorageManager {
 		
 		setDate("scheduledTime", cal.getTime);
 	}
+	
+	def sort(names: List[String]) = {
+		val orgList = list;
+		removeAll;
+		val newList = names.zipWithIndex.foreach { case (s, i) =>
+			val newInfo = orgList.filter(_.name == s).head.copy(seqNo=i+1);
+			add(newInfo);
+		}
+	}
 }
 
 case class MongoSqlInfo(

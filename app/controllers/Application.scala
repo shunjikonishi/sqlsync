@@ -125,4 +125,13 @@ object Application extends Controller with AccessControl {
 		Ok("OK");
 	}
 	
+	def sort = filterAction { implicit request =>
+		try {
+			val names = RequestUtils.getPostParams("sortNames");
+			man.sort(names);
+			Ok("OK");
+		} catch {
+			case e: Exception => Ok(e.toString);
+		}
+	}
 }

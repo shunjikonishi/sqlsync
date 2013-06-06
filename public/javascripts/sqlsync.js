@@ -58,7 +58,7 @@ flect.app.sqlsync.SqlSync = function(scheduledTime) {
 		return ret;
 	}
 	function getRecordCount() {
-		return $("#sql-table").find("tbody").find("tr").length;
+		return $("#sql-table").find("tbody tr").length;
 	}
 	function error(str) {
 		$("#error-msg").html(str);
@@ -209,4 +209,53 @@ flect.app.sqlsync.SqlSync = function(scheduledTime) {
 		setCurrentSqlInfo(new SQLInfo(idx, tr));
 	});
 	selSchedule.val(scheduledTime);
+	
+	var table = $("#sql-table");
+	table.find("tbody tr").draggable({
+		"drag": function() { 
+			console.log("dragging");
+		},
+		"axis" : "y",
+		"cursor" : "move",
+		"containment" : table,
+		"helper" : "clone"
+	});
+	table.find("tr").droppable({
+		"drop" : function(e, ui) {
+			var idx = 0,
+				dropName = $(this).find("td:eq(0)").text(),
+				dragName = $(ui.draggable).find("td:eq(0)").text(),
+				records = table.find("tbody tr"),
+				names = [];
+			if (!dropName) {
+				names.push(dragName);
+			}
+			for (var i=0; i<records.length; i++) {
+				var curName = $(records[i]).find("td:eq(0)").text();
+				if (curName != dragName) {
+					names.push(curName);
+					if (curName == dropName) {
+						names.push(dragName);
+					}
+				}
+			}
+			$.ajax({
+				"url" : "/sync/sort", 
+				"type" : "POST",
+				"data" : {
+					"sortNames" : names
+				},
+				"success" : function(data) {
+					if (data == "OK") {
+						location.reload();
+					} else {
+						error(data);
+					}
+				},
+				"error" : function(xhr) {
+					error(xhr.responseText);
+				}
+			});
+		}
+	});
 }
