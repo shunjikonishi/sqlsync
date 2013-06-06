@@ -216,7 +216,6 @@ flect.app.sqlsync.SqlSync = function(scheduledTime) {
 			console.log("dragging");
 		},
 		"axis" : "y",
-		"cursor" : "move",
 		"containment" : table,
 		"helper" : "clone"
 	});
@@ -227,6 +226,9 @@ flect.app.sqlsync.SqlSync = function(scheduledTime) {
 				dragName = $(ui.draggable).find("td:eq(0)").text(),
 				records = table.find("tbody tr"),
 				names = [];
+			if (dragName == dropName) {
+				return;
+			}
 			if (!dropName) {
 				names.push(dragName);
 			}
