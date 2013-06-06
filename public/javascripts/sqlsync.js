@@ -212,9 +212,6 @@ flect.app.sqlsync.SqlSync = function(scheduledTime) {
 	
 	var table = $("#sql-table");
 	table.find("tbody tr").draggable({
-		"drag": function() { 
-			console.log("dragging");
-		},
 		"axis" : "y",
 		"containment" : table,
 		"helper" : "clone"
