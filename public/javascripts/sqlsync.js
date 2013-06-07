@@ -61,7 +61,7 @@ flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 		return $("#sql-table").find("tbody tr").length;
 	}
 	function error(str) {
-		$("#error-msg").html(str);
+		$("#error-msg").html(str).show();
 	}
 	function disableSync() {
 		btnSync.attr("disabled", "disabled");
@@ -75,6 +75,7 @@ flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 			"error" : error
 		}),
 		btnSql = $("#btnSQL").click(function() {
+			$("#error-msg").hide();
 			var sql = $("#sql").val(),
 				date = $("#sql-datetime").val();
 			if (!sql) {
@@ -113,6 +114,7 @@ flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 			}
 		}),
 		btnUpdate = $("#btnUpdate").click(function() {
+			$("#error-msg").hide();
 			var data = formToHash();
 			data.oldName = currentSqlInfo.name;
 			data.seqNo = currentSqlInfo.seqNo;
@@ -133,6 +135,7 @@ flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 			});
 		}),
 		btnAdd = $("#btnAdd").click(function() {
+			$("#error-msg").hide();
 			var data = formToHash();
 			data.seqNo = getRecordCount() + 1;
 			$.ajax({
@@ -152,6 +155,7 @@ flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 			});
 		}),
 		btnSync = $("#btnSync").click(function() {
+			$("#error-msg").hide();
 			var data = formToHash();
 			$.ajax({
 				"url" : "/sync/execute", 
@@ -170,6 +174,7 @@ flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 			});
 		}),
 		btnSchedule = $("#btnSchedule").click(function() {
+			$("#error-msg").hide();
 			var time = selSchedule.val();
 			$.ajax({
 				"url" : "/sync/setScheduleTime", 
@@ -188,6 +193,9 @@ flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 					error(xhr.responseText);
 				}
 			});
+		}),
+		btnExport = $("#btnExport").click(function() {
+			location.href = "/sync/export.json";
 		}),
 		selSchedule = $("#scheduledTime");
 	

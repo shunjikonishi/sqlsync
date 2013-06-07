@@ -4,6 +4,7 @@ package models;
 import java.util.Date;
 import java.util.Calendar;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import se.radley.plugin.salat.Binders.ObjectId;
 import se.radley.plugin.salat.mongoCollection;
 import com.novus.salat.annotations.Key;
@@ -15,6 +16,10 @@ import com.mongodb.casbah.Imports.MongoDBObject;
 
 import play.api.Play;
 import play.api.Play.current;
+import play.api.libs.json.Json;
+import play.api.libs.json.JsValue;
+import play.api.libs.json.JsString;
+import play.api.libs.json.JsNumber;
 
 case class SqlInfo(name: String, desc: String, sql: String, 
 	objectName: String, externalIdFieldName: String, 
@@ -25,6 +30,22 @@ case class SqlInfo(name: String, desc: String, sql: String,
 		oldInfo.prevExecuted, oldInfo.lastExecuted, oldInfo.status, oldInfo.message, oldInfo.seqNo);
 	def updateStatus(newStatus: String, newMessage: String) = new SqlInfo(name, desc, sql, 
 		objectName, externalIdFieldName, prevExecuted, lastExecuted, newStatus, newMessage, seqNo);
+	
+	def toJson: JsValue = {
+		val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Json.toJson(
+			Map(
+				"name" -> JsString(name),
+				"desc" -> JsString(desc),
+				"sql" -> JsString(sql),
+				"objectName" -> JsString(objectName),
+				"externalIdFieldName" -> JsString(externalIdFieldName),
+				"prevExecuted" -> JsString(sdf.format(prevExecuted)),
+				"lastExecuted" -> JsString(sdf.format(lastExecuted)),
+				"seqNo" -> JsNumber(seqNo)
+			)
+		);
+	}
 }
 
 trait StorageManager {

@@ -12,8 +12,7 @@ body {
 .navbar-inverse .brand {
   color: #FFFFFF;
 }
-.error {
-	color: red;
+.alert-error {
 	margin-top: 20px;
 }
 #formList {
@@ -147,6 +146,10 @@ $(document).ready(function() {
 		<span style="margin-left: 20px;">
 			<a href="@verifyPage" target="_blank">同期ジョブ状態確認</a>
 		</span>
+		<span style="margin-left: 40px;">
+			<button class="btn btn-info" id="btnExport">エクスポート</button>
+			<button class="btn btn-danger" id="btnImport">インポート</button>
+		</span>
 	</div>
 	<hr>
 	<div>
@@ -186,7 +189,7 @@ $(document).ready(function() {
 		<button id="btnSQL" class="btn btn-info">SQLテスト実行</button> 
 		<button id="btnSync" class="btn btn-info" disabled>同期実行</button> 
 	</div>
-	<div id="error-msg" class="error">
+	<div id="error-msg" class="alert alert-error" style="display:none">
 	</div>
 	<div id="gridDiv"
 	</div>

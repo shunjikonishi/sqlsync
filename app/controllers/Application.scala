@@ -10,6 +10,7 @@ import play.api.data.Form;
 import play.api.data.Forms.mapping;
 import play.api.data.Forms.text;
 import play.api.data.Forms.number;
+import play.api.libs.json.JsArray;
 
 import models.Schedule;
 import models.SqlInfo;
@@ -136,4 +137,15 @@ object Application extends Controller with AccessControl {
 			case e: Exception => Ok(e.toString);
 		}
 	}
+	
+	def exportJob = filterAction { implicit request =>
+		val list = man.list.map(_.toJson);
+		Ok(JsArray(list)).as("application/octet-stream");
+	}
+	
+	def importJob = filterAction { implicit request =>
+		Ok("OK");
+	}
+	
+	
 }

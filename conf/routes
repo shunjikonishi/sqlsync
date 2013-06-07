@@ -10,6 +10,8 @@ POST    /sync/delete                controllers.Application.delete
 POST    /sync/execute               controllers.Application.execute
 POST    /sync/setScheduleTime       controllers.Application.setScheduleTime
 POST    /sync/sort                  controllers.Application.sort
+GET     /sync/export.json           controllers.Application.exportJob
+POST    /sync/import.json           controllers.Application.importJob
 POST    /sql/model                  controllers.MySelectTool.colModel
 POST    /sql/data                   controllers.MySelectTool.data
 
