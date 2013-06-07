@@ -68,7 +68,7 @@ flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 	}
 	
 	var currentSqlInfo = null,
-		grid = new flect.util.SQLGrid({
+		grid = new flect.util.SqlGrid({
 			"modelPath" : "/sql/model",
 			"dataPath" : "/sql/data",
 			"div" : "#gridDiv",
@@ -260,8 +260,8 @@ flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 	});
 	if (dragged) {
 		var tr = table.find("tr[data-name='" + dragged + "']");
-//		tr.hide().show("slide", {"direction" : "left"});
-		tr.hide().fadeTo("slow", "0.5");
+		tr.hide().addClass("error").fadeTo(2000, "1.0", function() {
+			tr.removeClass("error");
+		});
 	}
-	
 }
