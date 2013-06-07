@@ -144,8 +144,37 @@ object Application extends Controller with AccessControl {
 	}
 	
 	def importJob = filterAction { implicit request =>
-		Ok("OK");
+		request.body.asMultipartFormData match {
+			case Some(mdf) =>
+				mdf.file("importFile") match {
+					case Some(file) => 
+						try  {
+							val list = man.fromFile(file.ref.file);
+							val sf = Salesforce(man);
+							val validateList = list.map(sf.validate(_, true));
+							if (validateList.exists(_.hasError)) {
+								throw new IllegalArgumentException(
+									validateList.foldLeft("") { (ret, v) =>
+										if (v.msg == null || v.msg == "") {
+											ret;
+										} else {
+											ret + "\n" + v.msg;
+										}
+									}
+								);
+							}
+							man.removeAll;
+							list.foreach(man.add(_));
+							Redirect("/");
+						} catch {
+							case e: Exception => 
+								e.printStackTrace;
+								Ok(e.toString);
+						}
+					case None => BadRequest;
+				}
+			case None => BadRequest;
+		}
 	}
-	
 	
 }

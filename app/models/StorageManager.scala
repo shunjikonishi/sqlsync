@@ -1,6 +1,6 @@
 package models;
 
-
+import java.io.File;
 import java.util.Date;
 import java.util.Calendar;
 import java.text.DecimalFormat;
@@ -17,9 +17,12 @@ import com.mongodb.casbah.Imports.MongoDBObject;
 import play.api.Play;
 import play.api.Play.current;
 import play.api.libs.json.Json;
+import play.api.libs.json.JsArray;
 import play.api.libs.json.JsValue;
 import play.api.libs.json.JsString;
 import play.api.libs.json.JsNumber;
+
+import jp.co.flect.io.FileUtils;
 
 case class SqlInfo(name: String, desc: String, sql: String, 
 	objectName: String, externalIdFieldName: String, 
@@ -46,6 +49,7 @@ case class SqlInfo(name: String, desc: String, sql: String,
 			)
 		);
 	}
+	
 }
 
 trait StorageManager {
@@ -91,6 +95,35 @@ trait StorageManager {
 		val newList = names.zipWithIndex.foreach { case (s, i) =>
 			val newInfo = orgList.filter(_.name == s).head.copy(seqNo=i+1);
 			add(newInfo);
+		}
+	}
+	
+	def fromFile(file: File): List[SqlInfo] = {
+		Json.parse(FileUtils.readFile(file)) match {
+			case arr: JsArray =>
+				val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				arr.value.map { obj =>
+					val name = (obj \ "name").as[String];
+					val desc = (obj \ "desc").as[String];
+					val sql = (obj \ "sql").as[String];
+					val objectName = (obj \ "objectName").as[String];
+					val externalIdFieldName = (obj \ "externalIdFieldName").as[String];
+					val prevExecuted = sdf.parse((obj \ "prevExecuted").as[String]);
+					val lastExecuted = sdf.parse((obj \ "lastExecuted").as[String]);
+					val seqNo = (obj \ "seqNo").as[Int];
+					SqlInfo(
+						name=name,
+						desc=desc,
+						sql=sql,
+						objectName=objectName,
+						externalIdFieldName=externalIdFieldName,
+						prevExecuted=prevExecuted,
+						lastExecuted=lastExecuted,
+						seqNo=seqNo
+					);
+				}.toList;
+			case _ =>
+				throw new IllegalArgumentException("Invalid file format");
 		}
 	}
 }

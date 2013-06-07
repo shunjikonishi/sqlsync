@@ -197,7 +197,18 @@ flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 		btnExport = $("#btnExport").click(function() {
 			location.href = "/sync/export.json";
 		}),
+		btnImport = $("#btnImport").click(function() {
+			
+			$("#importFile").val(null).click();
+		}),
 		selSchedule = $("#scheduledTime");
+	
+	$("#importFile").change(function() {
+		var filename = $(this).val();
+		if (filename) {
+			$("#importForm")[0].submit();
+		}
+	});
 	
 	$("#name").change(disableSync);
 	$("#desc").change(disableSync);
