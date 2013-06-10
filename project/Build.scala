@@ -16,8 +16,8 @@ object ApplicationBuild extends Build {
     "se.radley" %% "play-plugins-salat" % "1.2",
     "org.apache.velocity" % "velocity" % "1.7",
     "log4j" % "log4j" % "1.2.17",
-    "org.apache.httpcomponents" % "httpclient" % "4.2.4",
-    "jp.co.flect" % "flectSalesforce" % "1.0"
+//    "jp.co.flect" % "flectSalesforce" % "1.0",
+    "org.apache.httpcomponents" % "httpclient" % "4.2.4"
             
 //    "se.radley" % "play-plugins-salat_2.10.0-RC1" % "1.2-SNAPSHOT"
   )
@@ -25,8 +25,8 @@ object ApplicationBuild extends Build {
 
   val main = play.Project(appName, appVersion, appDependencies).settings(
     // Add your own project settings here      
-    resolvers += "Typesafe Repository 2" at "http://repo.typesafe.com/typesafe/repo/",
-    resolvers += "FLECT Repository" at "http://flect.github.io/maven-repo/"
+//    resolvers += "FLECT Repository" at "http://flect.github.io/maven-repo/",
+    resolvers += "Typesafe Repository 2" at "http://repo.typesafe.com/typesafe/repo/"
   )
 
 }
