@@ -16,7 +16,7 @@ object ApplicationBuild extends Build {
     "se.radley" %% "play-plugins-salat" % "1.2",
     "org.apache.velocity" % "velocity" % "1.7",
     "log4j" % "log4j" % "1.2.17",
-//    "commons-lang" % "commons-lang" % "2.6",
+    "commons-lang" % "commons-lang" % "2.6",
 //    "jp.co.flect" % "flectSalesforce" % "1.0",
     "org.apache.httpcomponents" % "httpclient" % "4.2.4"
             

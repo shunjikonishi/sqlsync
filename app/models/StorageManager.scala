@@ -207,7 +207,7 @@ class MongoStorageManager extends StorageManager {
 	}.toList.sortBy(_.seqNo);
 	
 	override def add(info: SqlInfo) = {
-println("Sm#add: " + info.name + ", " + info.jobId);
+		println("add: " + info);
 		val obj = new MongoSqlInfo(
 			name = info.name, 
 			desc = info.desc,
@@ -229,6 +229,7 @@ println("Sm#add: " + info.name + ", " + info.jobId);
 	};
 	
 	override def remove(name: String) = {
+		println("remove: " + name);
 		dao.remove(MongoDBObject("name" -> name));
 		true;
 	};
