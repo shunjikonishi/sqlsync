@@ -18,21 +18,42 @@ import play.api.Play;
 import play.api.Play.current;
 import play.api.libs.json.Json;
 import play.api.libs.json.JsArray;
+import play.api.libs.json.JsBoolean;
 import play.api.libs.json.JsValue;
 import play.api.libs.json.JsString;
 import play.api.libs.json.JsNumber;
 
 import jp.co.flect.io.FileUtils;
 
-case class SqlInfo(name: String, desc: String, sql: String, 
+case class SqlInfo(
+	name: String, desc: String, sql: String, 
 	objectName: String, externalIdFieldName: String, 
-	prevExecuted: Date, lastExecuted: Date, status: String = "", message: String = "", seqNo: Int) {
+	prevExecuted: Date, lastExecuted: Date, 
+	status: String = "", message: String = "", 
+	seqNo: Int, enabled: Boolean = true,
+	jobId: Option[String] = None, updateCount: Int = 0, errorCount: Int = 0) {
 	
-	def update(d: Date, now: Date) = new SqlInfo(name, desc, sql, objectName, externalIdFieldName, d, now, seqNo=seqNo);
-	def merge(oldInfo: SqlInfo) = new SqlInfo(name, desc, sql, objectName, externalIdFieldName, 
-		oldInfo.prevExecuted, oldInfo.lastExecuted, oldInfo.status, oldInfo.message, oldInfo.seqNo);
-	def updateStatus(newStatus: String, newMessage: String) = new SqlInfo(name, desc, sql, 
-		objectName, externalIdFieldName, prevExecuted, lastExecuted, newStatus, newMessage, seqNo);
+	def update(d: Date, now: Date) = copy(
+		prevExecuted = d, 
+		lastExecuted = now, 
+		status = "", 
+		message = "",
+		jobId = None,
+		updateCount = 0,
+		errorCount = 0
+	);
+	
+	def merge(oldInfo: SqlInfo) = copy(
+		prevExecuted = oldInfo.prevExecuted,
+		lastExecuted = oldInfo.lastExecuted,
+		status = oldInfo.status,
+		message = oldInfo.message,
+		seqNo = oldInfo.seqNo,
+		enabled = oldInfo.enabled,
+		jobId = oldInfo.jobId,
+		updateCount = oldInfo.updateCount,
+		errorCount = oldInfo.errorCount
+	);
 	
 	def toJson: JsValue = {
 		val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -45,7 +66,8 @@ case class SqlInfo(name: String, desc: String, sql: String,
 				"externalIdFieldName" -> JsString(externalIdFieldName),
 				"prevExecuted" -> JsString(sdf.format(prevExecuted)),
 				"lastExecuted" -> JsString(sdf.format(lastExecuted)),
-				"seqNo" -> JsNumber(seqNo)
+				"seqNo" -> JsNumber(seqNo),
+				"enabled" -> JsBoolean(enabled)
 			)
 		);
 	}
@@ -111,6 +133,7 @@ trait StorageManager {
 					val prevExecuted = sdf.parse((obj \ "prevExecuted").as[String]);
 					val lastExecuted = sdf.parse((obj \ "lastExecuted").as[String]);
 					val seqNo = (obj \ "seqNo").as[Int];
+					val enabled = (obj \ "enabled").asOpt[Boolean].getOrElse(true);
 					SqlInfo(
 						name=name,
 						desc=desc,
@@ -119,7 +142,8 @@ trait StorageManager {
 						externalIdFieldName=externalIdFieldName,
 						prevExecuted=prevExecuted,
 						lastExecuted=lastExecuted,
-						seqNo=seqNo
+						seqNo=seqNo,
+						enabled = enabled
 					);
 				}.toList;
 			case _ =>
@@ -139,7 +163,11 @@ case class MongoSqlInfo(
 	lastExecuted: Date,
 	status: String,
 	message: String,
-	seqNo: Option[Int]
+	seqNo: Option[Int],
+	enabled: Option[Boolean],
+	jobId: Option[String],
+	updateCount: Option[Int],
+	errorCount: Option[Int]
 );	
 
 case class MongoDateInfo(
@@ -155,9 +183,9 @@ object MongoStorageManager {
 			val name = "global";
 			override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = "_t");
 		}
-		context.registerGlobalKeyOverride(remapThis = "id", toThisInstead = "_id")
-		context.registerClassLoader(Play.classloader)
-		context
+		context.registerGlobalKeyOverride(remapThis = "id", toThisInstead = "_id");
+		context.registerClassLoader(Play.classloader);
+		context;
 	}
 }
 class MongoStorageManager extends StorageManager {
@@ -168,10 +196,18 @@ class MongoStorageManager extends StorageManager {
 	val dao2 = new SalatDAO[MongoDateInfo, ObjectId](mongoCollection("dateInfo")) {}
 	
 	override def list = dao.find(MongoDBObject.empty).map { x =>
-		SqlInfo(x.name, x.desc, x.sql, x.objectName, x.externalIdFieldName, x.prevExecuted, x.lastExecuted, x.status, x.message, x.seqNo.getOrElse(0));
+		SqlInfo(
+			x.name, x.desc, x.sql, 
+			x.objectName, x.externalIdFieldName, 
+			x.prevExecuted, x.lastExecuted, 
+			x.status, x.message, 
+			x.seqNo.getOrElse(0), x.enabled.getOrElse(true),
+			x.jobId, x.updateCount.getOrElse(0), x.errorCount.getOrElse(0)
+		);
 	}.toList.sortBy(_.seqNo);
 	
 	override def add(info: SqlInfo) = {
+println("Sm#add: " + info.name + ", " + info.jobId);
 		val obj = new MongoSqlInfo(
 			name = info.name, 
 			desc = info.desc,
@@ -182,7 +218,11 @@ class MongoStorageManager extends StorageManager {
 			lastExecuted = info.lastExecuted,
 			status = info.status,
 			message = info.message,
-			seqNo = Some(info.seqNo)
+			seqNo = Some(info.seqNo),
+			enabled = Some(info.enabled),
+			jobId = info.jobId,
+			updateCount = Some(info.updateCount),
+			errorCount = Some(info.errorCount)
 		);
 		dao.insert(obj);
 		true;

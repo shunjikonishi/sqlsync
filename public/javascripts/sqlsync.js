@@ -27,11 +27,11 @@ flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 	function SQLInfo(rowid, tr) {
 		this.rowid = rowid;
 		this.name = tr.find("td:eq(0)").text();
-		this.desc = tr.find("td:eq(1)").text();
-		this.objectName = tr.find("td:eq(2)").text();
-		this.externalId = tr.find("td:eq(3)").text();
-		this.lastExecuted = strToDate(tr.find("td:eq(4)").text());
-		this.nextExecute = strToDate(tr.find("td:eq(5)").text());
+		this.desc = tr.find("td:eq(2)").text();
+		this.objectName = tr.find("td:eq(3)").text();
+		this.externalId = tr.find("td:eq(4)").text();
+		this.lastExecuted = strToDate(tr.find("td:eq(5)").text());
+		this.nextExecute = strToDate(tr.find("td:eq(6)").text());
 		this.sql = tr.attr("data-sql");
 		this.seqNo = tr.attr("data-seqNo");
 	}
@@ -157,6 +157,7 @@ flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 		btnSync = $("#btnSync").click(function() {
 			$("#error-msg").hide();
 			var data = formToHash();
+			data.seqNo = currentSqlInfo.seqNo;
 			$.ajax({
 				"url" : "/sync/execute", 
 				"type" : "POST",
@@ -276,6 +277,28 @@ flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 				}
 			});
 		}
+	});
+	table.find(".sql-enable").click(function() {
+		var name = $(this).parents("tr").attr("data-name");
+		var enabled = !($(this).attr("data-enabled") == "true");
+		$.ajax({
+			"url" : "/sync/setEnabled", 
+			"type" : "POST",
+			"data" : {
+				"name" : name,
+				"enabled" : enabled
+			},
+			"success" : function(data) {
+				if (data == "OK") {
+					location.reload();
+				} else {
+					error(data);
+				}
+			},
+			"error" : function(xhr) {
+				error(xhr.responseText);
+			}
+		});
 	});
 	if (dragged) {
 		var tr = table.find("tr[data-name='" + dragged + "']");

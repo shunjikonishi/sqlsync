@@ -10,6 +10,7 @@ import play.api.data.Form;
 import play.api.data.Forms.mapping;
 import play.api.data.Forms.text;
 import play.api.data.Forms.number;
+import play.api.data.Forms.boolean;
 import play.api.libs.json.JsArray;
 
 import models.Schedule;
@@ -103,7 +104,7 @@ object Application extends Controller with AccessControl {
 	def execute = filterAction { implicit request =>
 		val data = form.bindFromRequest;
 		if (data.hasErrors) {
-			BadRequest;
+			BadRequest(data.errors.mkString("<br>"));
 		} else {
 			val info = data.get;
 			try {
@@ -177,4 +178,21 @@ object Application extends Controller with AccessControl {
 		}
 	}
 	
+	def setEnabled = filterAction { implicit request => 
+		try {
+			val name = RequestUtils.getPostParam("name").get
+			val enabled = RequestUtils.getPostParam("enabled").get;
+			val info = man.get(name);
+			if (info.isEmpty) {
+				Ok("更新対象のオブジェクトが見つかりません: " + name);
+			} else {
+				val newInfo = info.get.copy(enabled=enabled.toBoolean);
+				man.remove(name);
+				man.add(newInfo);
+				Ok("OK");
+			}
+		} catch {
+			case e: Exception => Ok(e.toString);
+		}
+	}
 }

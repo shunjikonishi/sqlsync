@@ -5,6 +5,7 @@ import play.api.mvc.Action;
 import play.api.mvc.AnyContent;
 import play.api.mvc.Request;
 import play.api.mvc.Result;
+import play.api.mvc.ResponseHeader;
 import play.api.mvc.Controller;
 import org.apache.commons.codec.binary.Base64;
 

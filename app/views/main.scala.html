@@ -33,6 +33,11 @@ body {
 	margin-top: 20px;
 	width: 90%;
 }
+td img {
+	width: 24px;
+	height: 24px;
+}
+
 </style>
 <script src="@routes.Assets.at("javascripts/ext/bootstrap/js/bootstrap.min.js")"></script>
 <script type='text/javascript' src='@routes.Assets.at("javascripts/ext/jqgrid/js/i18n/grid.locale-ja.js")'></script>
@@ -66,6 +71,7 @@ $(document).ready(function() {
 			<thead>
 				<tr>
 					<th>名前</th>
+					<th>状態</th>
 					<th>説明</th>
 					<th>オブジェクト名</th>
 					<th>外部ID</th>
@@ -73,12 +79,14 @@ $(document).ready(function() {
 					<th>次回対象日時</th>
 					<th>ステータス</th>
 					<th>メッセージ</th>
+					<th>件数</th>
 				</tr>
 			</thead>
 			<tbody>
 				@list.map{ obj =>
-				<tr class="sqlinfo" data-sql="@obj.sql" data-seqNo="@obj.seqNo" data-name="@obj.name">
+				<tr class="sqlinfo" data-sql="@obj.sql" data-seqNo="@obj.seqNo" data-name="@obj.name" data-updateCount="@obj.updateCount" data-errorCount="@obj.errorCount">
 					<td>@obj.name</td>
+					<td><a class="sql-enable" href="#" data-enabled="@obj.enabled">@if(obj.enabled) {<img src="/assets/images/enable.png"/>} else {<img src="/assets/images/disable.png"/>}</a></td>
 					<td>@obj.desc</td>
 					<td>@obj.objectName</td>
 					<td>@obj.externalIdFieldName</td>
@@ -86,6 +94,7 @@ $(document).ready(function() {
 					<td>@obj.lastExecuted.format("yyyy-MM-dd HH:mm:ss")</td>
 					<td>@obj.status</td>
 					<td>@obj.message</td>
+					<td>@if(obj.updateCount == 0 && obj.errorCount == 0) {-} else {@obj.updateCount / @obj.errorCount}</td>
 				</tr>}
 			</tbody>
 		</table>
@@ -130,6 +139,8 @@ $(document).ready(function() {
 				<option value="17:30:00">17:30</option>
 				<option value="18:00:00">18:00</option>
 				<option value="18:30:00">18:30</option>
+				<option value="18:40:00">18:40</option>
+				<option value="18:50:00">18:50</option>
 				<option value="19:00:00">19:00</option>
 				<option value="19:30:00">19:30</option>
 				<option value="20:00:00">20:00</option>
@@ -194,7 +205,7 @@ $(document).ready(function() {
 	<div id="gridDiv"
 	</div>
 </div>
-<form id="importForm" style="position:absoulte;top:0;left:-1000px" action="/sync/import.json" method="post" enctype="multipart/form-data">
+<form id="importForm" style="position:absolute;top:0;left:-1000px" action="/sync/import.json" method="post" enctype="multipart/form-data">
 	<input type="file" name="importFile" id="importFile">
 </form>
 }

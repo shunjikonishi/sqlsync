@@ -62,7 +62,7 @@ class Schedule(storage: StorageManager, var scheduledTime: String) {
 			if (isScheduledTime) {
 				val date = new Date();
 				val salesforce = Salesforce(storage);
-				val list = storage.list;
+				val list = storage.list.filter(_.enabled);
 				println("executeAll: date=" + date + ", count=" + list.size);
 				list.foreach { info =>
 					salesforce.execute(info.lastExecuted, info);

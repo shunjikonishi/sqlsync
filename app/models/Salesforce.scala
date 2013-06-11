@@ -10,6 +10,7 @@ import play.api.cache.Cache;
 import jp.co.flect.salesforce.SalesforceClient;
 import jp.co.flect.salesforce.SObjectDef;
 import jp.co.flect.salesforce.bulk.SQLSyncRequest;
+import jp.co.flect.salesforce.bulk.JobInfo;
 import jp.co.flect.salesforce.event.SQLSynchronizerListener;
 import jp.co.flect.salesforce.event.SQLSynchronizerEvent;
 
@@ -49,6 +50,8 @@ object Salesforce {
 class Salesforce(storage: StorageManager, client: SalesforceClient) {
 	
 	import Salesforce._;
+	
+	private val bulkClient = client.createBulkClient;
 	
 	def listObjectNames = {
 		val meta = client.describeGlobal;
@@ -129,7 +132,7 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 		newInfo;
 	}
 	
-	private class MyListener(con: Connection, info: SqlInfo) extends SQLSynchronizerListener {
+	private class MyListener(con: Connection, private var info: SqlInfo) extends SQLSynchronizerListener {
 		
 		import SQLSynchronizerEvent.EventType._;
 		
@@ -141,11 +144,57 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 			} else {
 				"";
 			}
-			val newInfo = info.updateStatus(e.getType.toString, msg);
+			val newInfo = (if (e.getType == ERROR) 
+					info.copy(lastExecuted=info.prevExecuted)
+				else if (e.getType == OPEN_JOB) {
+					start;
+					info.copy(jobId=Some(e.getJobInfo.getId))
+				} else
+					info
+		 		).copy(status=e.getType.toString, message=msg);
 			storage.remove(info.name);
 			storage.add(newInfo);
 			if (e.getType == ERROR || e.getType == MAKE_CSV || e.getType == NOT_PROCESSED) {
 				con.close;
+			}
+			info = newInfo;
+		}
+	}
+	
+	private var observeJob: Boolean = false;
+	
+	private def start: Unit = {
+		if (!observeJob) {
+			observeJob = true;
+			scheduleObserve
+		}
+	}
+	
+	private def scheduleObserve: Unit = {
+		import play.api.libs.concurrent.Akka;
+		import play.api.Play.current;
+		import scala.concurrent.duration.DurationInt;
+		import play.api.libs.concurrent.Execution.Implicits.defaultContext;
+		
+		Akka.system.scheduler.scheduleOnce(10 seconds) {
+			val list = storage.list.filter(_.jobId.nonEmpty);
+			println("ObserveJob: " + list.size);
+			if (list.isEmpty) {
+				observeJob = false;
+			} else {
+				list.foreach { info =>
+					val job = bulkClient.getJobStatus(new JobInfo(info.jobId.get));
+					if (job.getState == JobInfo.JobState.Closed) {
+						val newInfo = info.copy(
+							jobId = None, 
+							updateCount = job.getRecordsProcessed, 
+							errorCount = job.getRecordsFailed
+						);
+						storage.remove(info.name);
+						storage.add(newInfo);
+					}
+				}
+				scheduleObserve;
 			}
 		}
 	}

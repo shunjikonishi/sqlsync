@@ -12,6 +12,7 @@ POST    /sync/setScheduleTime       controllers.Application.setScheduleTime
 POST    /sync/sort                  controllers.Application.sort
 GET     /sync/export.json           controllers.Application.exportJob
 POST    /sync/import.json           controllers.Application.importJob
+POST    /sync/setEnabled            controllers.Application.setEnabled
 POST    /sql/model                  controllers.MySelectTool.colModel
 POST    /sql/data                   controllers.MySelectTool.data
 
