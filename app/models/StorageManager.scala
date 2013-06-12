@@ -86,30 +86,11 @@ trait StorageManager {
 		list.filter(_.name == name).headOption;
 	}
 	
-	def getDate(key: String): Date;
+	def getDate(key: String): Option[Date];
 	def setDate(key: String, date: Date): Unit;
 	
-	def getScheduledTime = {
-		val cal = Calendar.getInstance;
-		cal.setTime(getDate("scheduledTime"));
-		val h = cal.get(Calendar.HOUR_OF_DAY);
-		val m = cal.get(Calendar.MINUTE);
-		val s = cal.get(Calendar.SECOND);
-		
-		val fmt = new DecimalFormat("00");
-		fmt.format(h) + ":" + fmt.format(m) + ":" + fmt.format(s);
-	}
-	
-	def setScheduledTime(time: String) = {
-		val cal = Calendar.getInstance;
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		cal.add(Calendar.SECOND, Schedule.strToTime(time));
-		
-		setDate("scheduledTime", cal.getTime);
-	}
+	def getString(key: String): Option[String];
+	def setString(key: String, value: String): Unit;
 	
 	def sort(names: List[String]) = {
 		val orgList = list;
@@ -176,6 +157,11 @@ case class MongoDateInfo(
 	date: Date
 );
 
+case class MongoStrInfo(
+	@Key("_id") key: String,
+	value: String
+);
+
 object MongoStorageManager {
 	
 	implicit val context = {
@@ -194,6 +180,7 @@ class MongoStorageManager extends StorageManager {
 	
 	val dao = new SalatDAO[MongoSqlInfo, ObjectId](mongoCollection("sqlInfo")) {}
 	val dao2 = new SalatDAO[MongoDateInfo, ObjectId](mongoCollection("dateInfo")) {}
+	val dao3 = new SalatDAO[MongoStrInfo, String](mongoCollection("keyValueStore")) {}
 	
 	override def list = dao.find(MongoDBObject.empty).map { x =>
 		SqlInfo(
@@ -241,7 +228,7 @@ class MongoStorageManager extends StorageManager {
 	
 	override def getDate(key: String) = {
 		dao2.find(MongoDBObject.empty).filter( _.key == key)
-			.toList.map(_.date).headOption.getOrElse(new Date(0));
+			.toList.map(_.date).headOption;
 	}
 	
 	override def setDate(key: String, date: Date): Unit = {
@@ -249,5 +236,12 @@ class MongoStorageManager extends StorageManager {
 		dao2.insert(MongoDateInfo(key=key, date=date));
 	}
 	
+	override def getString(key: String) = {
+		dao3.findOneById(key).map(_.value);
+	}
+	
+	override def setString(key: String, value: String) {
+		dao3.save(MongoStrInfo(key, value));
+	}
 }
 

@@ -2,6 +2,7 @@ package models;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.text.SimpleDateFormat;
 
 object Schedule {
 	
@@ -24,23 +25,38 @@ object Schedule {
 		cal.get(Calendar.SECOND);
 	}
 	
-	def apply(storage: StorageManager, str: String) = new Schedule(storage, str);
+	def apply(storage: StorageManager) = new Schedule(storage);
 }
 
-class Schedule(storage: StorageManager, var scheduledTime: String) {
+class Schedule(storage: StorageManager) {
 	
 	import Schedule._;
 	
-	private def isScheduledTime = {
-		val now = Calendar.getInstance
-		val time1 = strToTime(scheduledTime);
-		val time2 = calendarToTime(now);
-		Math.abs(time2 - time1) < 10;
+	def scheduledTime = storage.getString("scheduledTime").getOrElse("01:00:00");
+	def scheduledTime_=(s: String) = storage.setString("scheduledTime", s);
+	
+	def scheduledTimeList = scheduledTime.split(",").toList;
+	
+	private def nextScheduledTime = storage.getDate("nextScheduledTime").getOrElse(new Date());
+	private def nextScheduledTime_=(d: Date) = storage.setDate("nextScheduledTime", d);
+	
+	private def nextSettingTime: String = {
+		val nowTime = new SimpleDateFormat("HH:mm:ss").format(new Date());
+		val array = scheduledTime.split(",");
+		val ret = array.find(_ >= nowTime).getOrElse(array.head);
+		println("nextSettingTime: now=" + nowTime + ", ret=" + ret);
+		ret;
 	}
 	
-	def calcNextSchedule = {
+	private def isScheduledTime = {
+		val next = nextScheduledTime;
+		val now = new Date();
+		Math.abs(next.getTime - now.getTime) < 10;
+	}
+	
+	def calcNextSchedule: Date = {
 		val cal = Calendar.getInstance
-		val time1 = strToTime(scheduledTime);
+		val time1 = strToTime(nextSettingTime);
 		val time2 = calendarToTime(cal);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
@@ -50,6 +66,7 @@ class Schedule(storage: StorageManager, var scheduledTime: String) {
 		if (time1 < time2) {
 			cal.add(Calendar.DAY_OF_MONTH, 1);
 		}
+		nextScheduledTime = cal.getTime;
 		
 		import play.api.libs.concurrent.Akka;
 		import play.api.Play.current;
@@ -68,6 +85,7 @@ class Schedule(storage: StorageManager, var scheduledTime: String) {
 					salesforce.execute(info.lastExecuted, info);
 				}
 			}
+			calcNextSchedule;
 		}
 		cal.getTime;
 	}

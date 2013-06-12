@@ -24,7 +24,7 @@ import utils.RequestUtils;
 object Application extends Controller with AccessControl {
 	
 	private val man: StorageManager = new MongoStorageManager();
-	val scheduledTime = Schedule(man, man.getScheduledTime);
+	val scheduledTime = Schedule(man);
 	println("onStart - scheduled=" + scheduledTime + ", lastExecuted" + man.getDate("lastExecuted"));
 	
 	private lazy val objectList = {
@@ -36,7 +36,7 @@ object Application extends Controller with AccessControl {
 		val oList = objectList
 		val verifyPage = Salesforce(man).verifyPage;
 		val dragged = request.flash.get("dragName").getOrElse("");
-		Ok(views.html.main(list, oList, verifyPage, scheduledTime, dragged))
+		Ok(views.html.main(list, oList, verifyPage, scheduledTime.scheduledTimeList, dragged))
 	}
 	
 	private val form = Form(mapping(
@@ -122,7 +122,6 @@ object Application extends Controller with AccessControl {
 	
 	def setScheduleTime = filterAction { implicit request => 
 		val time = RequestUtils.getPostParam("scheduledTime").get
-		man.setScheduledTime(time);
 		scheduledTime.scheduledTime = time;
 		println("Next schedule=" + scheduledTime.calcNextSchedule);
 		Ok("OK");

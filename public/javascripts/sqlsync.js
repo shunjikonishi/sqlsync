@@ -2,7 +2,7 @@ if (typeof(flect) == "undefined") flect = {};
 if (typeof(flect.app) == "undefined") flect.app = {};
 if (typeof(flect.app.sqlsync) == "undefined") flect.app.sqlsync = {};
 
-flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
+flect.app.sqlsync.SqlSync = function(dragged) {
 	function strToDate(str) {
 		var y = parseInt(str.substring(0, 4)),
 			m = parseInt(str.substring(5, 7)),
@@ -65,6 +65,26 @@ flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 	}
 	function disableSync() {
 		btnSync.attr("disabled", "disabled");
+	}
+	function setScheduledTime(time) {
+		$("#error-msg").hide();
+		$.ajax({
+			"url" : "/sync/setScheduleTime", 
+			"type" : "POST",
+			"data" : {
+				"scheduledTime" : time
+			},
+			"success" : function(data) {
+				if (data == "OK") {
+					location.reload();
+				} else {
+					error(data);
+				}
+			},
+			"error" : function(xhr) {
+				error(xhr.responseText);
+			}
+		});
 	}
 	
 	var currentSqlInfo = null,
@@ -174,26 +194,55 @@ flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 				}
 			});
 		}),
-		btnSchedule = $("#btnSchedule").click(function() {
-			$("#error-msg").hide();
+		btnScheduleAdd = $("#btnScheduleAdd").click(function() {
 			var time = selSchedule.val();
-			$.ajax({
-				"url" : "/sync/setScheduleTime", 
-				"type" : "POST",
-				"data" : {
-					"scheduledTime" : time
-				},
-				"success" : function(data) {
-					if (data == "OK") {
-						location.reload();
-					} else {
-						error(data);
+			var selected = selSchedule2.find("option");
+			if (selected.length > 0) {
+				var ret = "";
+				for (var i=0; i<selected.length; i++) {
+					var cur = $(selected[i]).attr("value");
+					if (ret.length > 0) {
+						ret += ",";
 					}
-				},
-				"error" : function(xhr) {
-					error(xhr.responseText);
+					if (time) {
+						if (time == cur) {
+							alert("その時刻はすでに設定されています");
+							return;
+						} else if (time && time < cur) {
+							ret += time + ",";
+							time = null;
+						}
+					}
+					ret += cur;
 				}
-			});
+				if (time) {
+					if (ret.length > 0) {
+						ret += ",";
+					}
+					ret += time;
+				}
+				time = ret;
+			}
+			setScheduledTime(time);
+		}),
+		btnScheduleDel = $("#btnScheduleDel").click(function() {
+			var selected = selSchedule2.val();
+			if (!selected || selected.length == 0) {
+				alert("削除する時刻を指定してください。");
+				return;
+			}
+			var options = selSchedule2.find("option");
+			var ret = "";
+			for (var i=0; i<options.length; i++) {
+				var cur = $(options[i]).attr("value");
+				if ($.inArray(cur, selected) == -1) {
+					if (ret.length > 0) {
+						ret += ",";
+					}
+					ret += cur;
+				}
+			}
+			setScheduledTime(ret);
 		}),
 		btnExport = $("#btnExport").click(function() {
 			location.href = "/sync/export.json";
@@ -202,7 +251,8 @@ flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 			
 			$("#importFile").val(null).click();
 		}),
-		selSchedule = $("#scheduledTime");
+		selSchedule = $("#scheduledTime"),
+		selSchedule2 = $("#scheduledTime2");
 	
 	$("#importFile").change(function() {
 		var filename = $(this).val();
@@ -228,7 +278,6 @@ flect.app.sqlsync.SqlSync = function(scheduledTime, dragged) {
 		var idx = tr.parent().find("tr").index(tr);
 		setCurrentSqlInfo(new SQLInfo(idx, tr));
 	});
-	selSchedule.val(scheduledTime);
 	
 	var table = $("#sql-table");
 	table.find("tbody tr").draggable({
