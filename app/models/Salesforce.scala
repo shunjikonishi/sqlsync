@@ -139,6 +139,7 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 		override def handleEvent(e: SQLSynchronizerEvent) {
 			println("BulkStatus: " + info.name + ": " + e.getType);
 			val msg = if (e.getType == ERROR) {
+				println("SyncError: " + info.name + ", " + e.getException().toString);
 				e.getException().printStackTrace;
 				e.getException().toString;
 			} else {
@@ -192,6 +193,9 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 						);
 						storage.remove(info.name);
 						storage.add(newInfo);
+						if (newInfo.errorCount > 0) {
+							println("SyncError: " + newInfo.name + ", errorCount=" + newInfo.errorCount);
+						}
 					}
 				}
 				scheduleObserve;
