@@ -25,7 +25,7 @@ object Application extends Controller with AccessControl {
 	
 	private val man: StorageManager = new MongoStorageManager();
 	val scheduledTime = Schedule(man);
-	println("onStart - scheduled=" + scheduledTime + ", lastExecuted" + man.getDate("lastExecuted"));
+	println("onStart - scheduled=" + scheduledTime + ", lastExecuted=" + man.getDate("lastExecuted"));
 	
 	private lazy val objectList = {
 		Salesforce(man).listObjectNames;

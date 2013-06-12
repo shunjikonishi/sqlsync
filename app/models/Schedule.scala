@@ -45,17 +45,19 @@ class Schedule(storage: StorageManager) {
 		val array = scheduledTime.split(",");
 		val ret = array.find(_ >= nowTime).getOrElse(array.head);
 		println("nextSettingTime: now=" + nowTime + ", ret=" + ret);
+		Thread.dumpStack;
 		ret;
 	}
 	
 	private def isScheduledTime = {
 		val next = nextScheduledTime;
 		val now = new Date();
-		Math.abs(next.getTime - now.getTime) < 10;
+		println("isScheduledTime: now=" + now + ", next=" + next + ", abs=" + (Math.abs(next.getTime - now.getTime)));
+		Math.abs(next.getTime - now.getTime) < 10000;
 	}
 	
 	def calcNextSchedule: Date = {
-		val cal = Calendar.getInstance
+		val cal = Calendar.getInstance;
 		val time1 = strToTime(nextSettingTime);
 		val time2 = calendarToTime(cal);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -67,6 +69,7 @@ class Schedule(storage: StorageManager) {
 			cal.add(Calendar.DAY_OF_MONTH, 1);
 		}
 		nextScheduledTime = cal.getTime;
+println("test1: " + cal.getTime);
 		
 		import play.api.libs.concurrent.Akka;
 		import play.api.Play.current;

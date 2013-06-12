@@ -44,7 +44,6 @@ flect.app.sqlsync.SqlSync = function(dragged) {
 		$("#externalIdFieldName").val(info.externalId);
 		$("#sql-datetime").val(dateToStr(info.nextExecute));
 		
-		btnDelete.removeAttr("disabled");
 		btnUpdate.removeAttr("disabled");
 		btnSync.removeAttr("disabled");
 	}
@@ -114,24 +113,6 @@ flect.app.sqlsync.SqlSync = function(dragged) {
 				}
 			];
 			grid.execute(sql, params);
-		}),
-		btnDelete = $("#btnDelete").click(function() {
-			if (confirm("削除しますか？")) {
-				var name = currentSqlInfo.name;
-				$.ajax({
-					"url" : "/sync/delete", 
-					"type" : "POST",
-					"data" : {
-						"name" : name
-					},
-					"success" : function(data) {
-						location.reload();
-					},
-					"error" : function(xhr) {
-						error(xhr.responseText);
-					}
-				});
-			}
 		}),
 		btnUpdate = $("#btnUpdate").click(function() {
 			$("#error-msg").hide();
@@ -348,6 +329,24 @@ flect.app.sqlsync.SqlSync = function(dragged) {
 				error(xhr.responseText);
 			}
 		});
+	});
+	table.find("button").click(function() {
+		var name = $(this).parents("tr").attr("data-name");
+		if (confirm(name + "を削除しますか？")) {
+			$.ajax({
+				"url" : "/sync/delete", 
+				"type" : "POST",
+				"data" : {
+					"name" : name
+				},
+				"success" : function(data) {
+					location.reload();
+				},
+				"error" : function(xhr) {
+					error(xhr.responseText);
+				}
+			});
+		}
 	});
 	if (dragged) {
 		var tr = table.find("tr[data-name='" + dragged + "']");

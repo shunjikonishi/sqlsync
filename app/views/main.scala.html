@@ -79,6 +79,7 @@ $(document).ready(function() {
 					<th>ステータス</th>
 					<th>メッセージ</th>
 					<th>件数</th>
+					<th>削除</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -94,6 +95,7 @@ $(document).ready(function() {
 					<td>@obj.status</td>
 					<td>@obj.message</td>
 					<td>@if(obj.updateCount == 0 && obj.errorCount == 0) {-} else {@obj.updateCount / @obj.errorCount}</td>
+					<td><button class="btn">削除</button>
 				</tr>}
 			</tbody>
 		</table>
@@ -202,7 +204,6 @@ $(document).ready(function() {
 	</div>
 	<div style="margin-bottom:10px;">
 		<button id="btnUpdate" class="btn btn-info" disabled>更新</button>
-		<button id="btnDelete" class="btn btn-info" disabled>削除</button>
 		<button id="btnAdd" class="btn btn-info" style="margin-left:550px;">新規登録</button>
 	</div>
 	<div style="margin-bottom:10px;">
