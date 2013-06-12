@@ -79,6 +79,7 @@ trait StorageManager {
 	def list: List[SqlInfo];
 	def add(info: SqlInfo): Boolean;
 	def remove(name: String): Boolean;
+	def update(info: SqlInfo): Boolean;
 	
 	def removeAll: Boolean;
 	
@@ -194,7 +195,7 @@ class MongoStorageManager extends StorageManager {
 	}.toList.sortBy(_.seqNo);
 	
 	override def add(info: SqlInfo) = {
-		println("add: " + info);
+		println("add: " + info.name);
 		val obj = new MongoSqlInfo(
 			name = info.name, 
 			desc = info.desc,
@@ -220,6 +221,34 @@ class MongoStorageManager extends StorageManager {
 		dao.remove(MongoDBObject("name" -> name));
 		true;
 	};
+	
+	override def update(info: SqlInfo) = {
+		println("update: " + info.name);
+		val oldInfo = dao.find(MongoDBObject.empty).filter(_.name == info.name).toList.headOption;
+		oldInfo match {
+			case Some(oldInfo) =>
+				val newInfo = oldInfo.copy(
+					name = info.name, 
+					desc = info.desc,
+					sql = info.sql,
+					objectName = info.objectName,
+					externalIdFieldName = info.externalIdFieldName,
+					prevExecuted = info.prevExecuted,
+					lastExecuted = info.lastExecuted,
+					status = info.status,
+					message = info.message,
+					seqNo = Some(info.seqNo),
+					enabled = Some(info.enabled),
+					jobId = info.jobId,
+					updateCount = Some(info.updateCount),
+					errorCount = Some(info.errorCount)
+				);
+				dao.save(newInfo);
+			case None =>
+				add(info);
+		}
+		true;
+	}
 	
 	override def removeAll = {
 		dao.remove(MongoDBObject.empty);

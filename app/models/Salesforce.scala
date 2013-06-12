@@ -121,8 +121,7 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 		val newInfo = info.update(date, now);
 		
 		val request = new SQLSyncRequest(con, info.sql, info.objectName);
-		storage.remove(info.name);
-		storage.add(newInfo);
+		storage.update(newInfo);
 		
 		request.setExternalIdFieldName(info.externalIdFieldName);
 		request.setParams(new Timestamp(date.getTime));
@@ -154,8 +153,7 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 				} else
 					info
 		 		).copy(status=e.getType.toString, message=msg);
-			storage.remove(info.name);
-			storage.add(newInfo);
+			storage.update(newInfo);
 			if (e.getType == ERROR || e.getType == MAKE_CSV || e.getType == NOT_PROCESSED) {
 				con.close;
 			}
@@ -192,8 +190,7 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 							updateCount = job.getRecordsProcessed, 
 							errorCount = job.getRecordsFailed
 						);
-						storage.remove(info.name);
-						storage.add(newInfo);
+						storage.update(newInfo);
 						if (newInfo.errorCount > 0) {
 							println("SyncError: " + newInfo.name + ", errorCount=" + newInfo.errorCount);
 						}

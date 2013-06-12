@@ -31,26 +31,25 @@ object Schedule {
 class Schedule(storage: StorageManager) {
 	
 	import Schedule._;
+	import play.api.libs.concurrent.Akka;
+	import play.api.Play.current;
+	import scala.concurrent.duration.FiniteDuration;
+	import java.util.concurrent.TimeUnit;
+	import play.api.libs.concurrent.Execution.Implicits.defaultContext;
+	import akka.actor.Cancellable;
+	
+	private var registeredSchedule: Option[Cancellable] = None;
 	
 	def scheduledTime = storage.getString("scheduledTime").getOrElse("01:00:00");
 	def scheduledTime_=(s: String) = storage.setString("scheduledTime", s);
 	
 	def scheduledTimeList = scheduledTime.split(",").toList;
 	
-	def nextScheduledTime = storage.getDate("nextScheduledTime").getOrElse(new Date());
-	def nextScheduledTime_=(d: Date) = storage.setDate("nextScheduledTime", d);
-	
 	private def nextSettingTime: String = {
 		val nowTime = new SimpleDateFormat("HH:mm:ss").format(new Date());
 		val array = scheduledTime.split(",");
 		val ret = array.find(_ >= nowTime).getOrElse(array.head);
 		ret;
-	}
-	
-	private def isScheduledTime = {
-		val next = nextScheduledTime;
-		val now = new Date();
-		Math.abs(next.getTime - now.getTime) < 10000;
 	}
 	
 	def calcNextSchedule: Date = {
@@ -65,31 +64,23 @@ class Schedule(storage: StorageManager) {
 		if (time1 < time2) {
 			cal.add(Calendar.DAY_OF_MONTH, 1);
 		}
-		val next = cal.getTime
-		if (next != nextScheduledTime) {
-			nextScheduledTime = next;
-			
-			import play.api.libs.concurrent.Akka;
-			import play.api.Play.current;
-			import scala.concurrent.duration.FiniteDuration;
-			import java.util.concurrent.TimeUnit;
-			import play.api.libs.concurrent.Execution.Implicits.defaultContext;
-			
-			val duration = new FiniteDuration(next.getTime - System.currentTimeMillis, TimeUnit.MILLISECONDS);
-			Akka.system.scheduler.scheduleOnce(duration) {
-				if (isScheduledTime) {
-					val date = new Date();
-					val salesforce = Salesforce(storage);
-					val list = storage.list.filter(_.enabled);
-					println("executeAll: date=" + date + ", count=" + list.size);
-					list.foreach { info =>
-						salesforce.execute(info.lastExecuted, info);
-					}
-				}
-				calcNextSchedule;
-			}
-			println("Next schedule=" + next);
+		val next = cal.getTime;
+		registeredSchedule.foreach { c =>
+			c.cancel;
+			registeredSchedule = None;
 		}
+		val duration = new FiniteDuration(next.getTime - System.currentTimeMillis, TimeUnit.MILLISECONDS);
+		registeredSchedule = Option(Akka.system.scheduler.scheduleOnce(duration) {
+			val date = new Date();
+			val salesforce = Salesforce(storage);
+			val list = storage.list.filter(_.enabled);
+			println("executeAll: date=" + date + ", count=" + list.size);
+			list.foreach { info =>
+				salesforce.execute(info.lastExecuted, info);
+			}
+			calcNextSchedule;
+		});
+		println("Next schedule=" + next);
 		next;
 	}
 	override def toString = scheduledTime;

@@ -83,8 +83,7 @@ object Application extends Controller with AccessControl {
 					Ok("更新対象のオブジェクトが見つかりません: " + oldName);
 				} else {
 					val newInfo = info.merge(oldInfo.get);
-					man.remove(oldName);
-					man.add(newInfo);
+					man.update(newInfo);
 					Ok("OK");
 				}
 			}
@@ -186,8 +185,7 @@ object Application extends Controller with AccessControl {
 				Ok("更新対象のオブジェクトが見つかりません: " + name);
 			} else {
 				val newInfo = info.get.copy(enabled=enabled.toBoolean);
-				man.remove(name);
-				man.add(newInfo);
+				man.update(newInfo);
 				Ok("OK");
 			}
 		} catch {

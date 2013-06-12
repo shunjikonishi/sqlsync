@@ -17,7 +17,6 @@ object Global extends GlobalSettings {
 				WS.url("http://" + appname.get + ".herokuapp.com/assets/ping.txt").get()
 			}
 		}
-		controllers.Application.scheduledTime.nextScheduledTime = new Date(0);
 		controllers.Application.scheduledTime.calcNextSchedule;
 	}
 	
