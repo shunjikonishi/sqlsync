@@ -11,11 +11,14 @@ object Global extends GlobalSettings {
 		import play.api.libs.concurrent.Execution.Implicits.defaultContext;
 		import play.api.libs.ws.WS
 		
-		Akka.system.scheduler.schedule(0 seconds, 10 minutes) {
-			WS.url("http://flect-sqlsync.herokuapp.com/assets/ping.txt").get()
+		val appname = sys.env.get("HEROKU_APPLICATION_NAME");
+		if (appname.nonEmpty) {
+			Akka.system.scheduler.schedule(0 seconds, 10 minutes) {
+				WS.url("http://" + appname.get + ".herokuapp.com/assets/ping.txt").get()
+			}
 		}
 		controllers.Application.scheduledTime.nextScheduledTime = new Date(0);
-		println("Next schedule=" + controllers.Application.scheduledTime.calcNextSchedule);
+		controllers.Application.scheduledTime.calcNextSchedule;
 	}
 	
 }

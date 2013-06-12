@@ -88,6 +88,7 @@ class Schedule(storage: StorageManager) {
 				}
 				calcNextSchedule;
 			}
+			println("Next schedule=" + next);
 		}
 		next;
 	}
