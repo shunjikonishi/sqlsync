@@ -1,5 +1,6 @@
 import play.api.GlobalSettings;
 import play.api.Application;
+import java.util.Date;
 
 object Global extends GlobalSettings {
 	
@@ -13,6 +14,7 @@ object Global extends GlobalSettings {
 		Akka.system.scheduler.schedule(0 seconds, 10 minutes) {
 			WS.url("http://flect-sqlsync.herokuapp.com/assets/ping.txt").get()
 		}
+		controllers.Application.scheduledTime.nextScheduledTime = new Date(0);
 		println("Next schedule=" + controllers.Application.scheduledTime.calcNextSchedule);
 	}
 	

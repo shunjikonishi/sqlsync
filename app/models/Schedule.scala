@@ -37,22 +37,19 @@ class Schedule(storage: StorageManager) {
 	
 	def scheduledTimeList = scheduledTime.split(",").toList;
 	
-	private def nextScheduledTime = storage.getDate("nextScheduledTime").getOrElse(new Date());
-	private def nextScheduledTime_=(d: Date) = storage.setDate("nextScheduledTime", d);
+	def nextScheduledTime = storage.getDate("nextScheduledTime").getOrElse(new Date());
+	def nextScheduledTime_=(d: Date) = storage.setDate("nextScheduledTime", d);
 	
 	private def nextSettingTime: String = {
 		val nowTime = new SimpleDateFormat("HH:mm:ss").format(new Date());
 		val array = scheduledTime.split(",");
 		val ret = array.find(_ >= nowTime).getOrElse(array.head);
-		println("nextSettingTime: now=" + nowTime + ", ret=" + ret);
-		Thread.dumpStack;
 		ret;
 	}
 	
 	private def isScheduledTime = {
 		val next = nextScheduledTime;
 		val now = new Date();
-		println("isScheduledTime: now=" + now + ", next=" + next + ", abs=" + (Math.abs(next.getTime - now.getTime)));
 		Math.abs(next.getTime - now.getTime) < 10000;
 	}
 	
@@ -68,29 +65,31 @@ class Schedule(storage: StorageManager) {
 		if (time1 < time2) {
 			cal.add(Calendar.DAY_OF_MONTH, 1);
 		}
-		nextScheduledTime = cal.getTime;
-println("test1: " + cal.getTime);
-		
-		import play.api.libs.concurrent.Akka;
-		import play.api.Play.current;
-		import scala.concurrent.duration.FiniteDuration;
-		import java.util.concurrent.TimeUnit;
-		import play.api.libs.concurrent.Execution.Implicits.defaultContext;
-		
-		val duration = new FiniteDuration(cal.getTimeInMillis - System.currentTimeMillis, TimeUnit.MILLISECONDS);
-		Akka.system.scheduler.scheduleOnce(duration) {
-			if (isScheduledTime) {
-				val date = new Date();
-				val salesforce = Salesforce(storage);
-				val list = storage.list.filter(_.enabled);
-				println("executeAll: date=" + date + ", count=" + list.size);
-				list.foreach { info =>
-					salesforce.execute(info.lastExecuted, info);
+		val next = cal.getTime
+		if (next != nextScheduledTime) {
+			nextScheduledTime = next;
+			
+			import play.api.libs.concurrent.Akka;
+			import play.api.Play.current;
+			import scala.concurrent.duration.FiniteDuration;
+			import java.util.concurrent.TimeUnit;
+			import play.api.libs.concurrent.Execution.Implicits.defaultContext;
+			
+			val duration = new FiniteDuration(next.getTime - System.currentTimeMillis, TimeUnit.MILLISECONDS);
+			Akka.system.scheduler.scheduleOnce(duration) {
+				if (isScheduledTime) {
+					val date = new Date();
+					val salesforce = Salesforce(storage);
+					val list = storage.list.filter(_.enabled);
+					println("executeAll: date=" + date + ", count=" + list.size);
+					list.foreach { info =>
+						salesforce.execute(info.lastExecuted, info);
+					}
 				}
+				calcNextSchedule;
 			}
-			calcNextSchedule;
 		}
-		cal.getTime;
+		next;
 	}
 	override def toString = scheduledTime;
 }

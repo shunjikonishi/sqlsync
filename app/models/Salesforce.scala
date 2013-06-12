@@ -129,6 +129,7 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 		request.addSQLSynchronizerListener(new MyListener(con, newInfo));
 		client.syncSQL(request);
 		
+		storage.setDate("lastExecuted", now)
 		newInfo;
 	}
 	
