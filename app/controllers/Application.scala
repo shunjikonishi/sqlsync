@@ -122,7 +122,7 @@ object Application extends Controller with AccessControl {
 	def setScheduleTime = filterAction { implicit request => 
 		val time = RequestUtils.getPostParam("scheduledTime").get
 		scheduledTime.scheduledTime = time;
-		println("Next schedule=" + scheduledTime.calcNextSchedule);
+		scheduledTime.calcNextSchedule;
 		Ok("OK");
 	}
 	
