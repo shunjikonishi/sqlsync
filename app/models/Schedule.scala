@@ -48,7 +48,7 @@ class Schedule(storage: StorageManager) {
 	private def nextSettingTime: String = {
 		val nowTime = new SimpleDateFormat("HH:mm:ss").format(new Date());
 		val array = scheduledTime.split(",");
-		val ret = array.find(_ >= nowTime).getOrElse(array.head);
+		val ret = array.find(_ > nowTime).getOrElse(array.head);
 		ret;
 	}
 	
