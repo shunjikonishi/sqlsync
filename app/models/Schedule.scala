@@ -71,20 +71,24 @@ class Schedule(storage: StorageManager) {
 		}
 		val duration = new FiniteDuration(next.getTime - System.currentTimeMillis, TimeUnit.MILLISECONDS);
 		registeredSchedule = Option(Akka.system.scheduler.scheduleOnce(duration) {
-			val date = new Date();
-			val salesforce = Salesforce(storage);
-			val list = storage.list.filter(_.enabled);
-			println("executeAll: date=" + date + ", count=" + list.size);
-			try {
-				list.foreach { info =>
-					salesforce.execute(info.lastExecuted, info);
+			if (Akka.system.isTerminated) {
+				println("Terminate Akka. Skip schedule");
+			} else {
+				val date = new Date();
+				val salesforce = Salesforce(storage);
+				val list = storage.list.filter(_.enabled);
+				println("executeAll: date=" + date + ", count=" + list.size);
+				try {
+					list.foreach { info =>
+						salesforce.execute(info.lastExecuted, info);
+					}
+				} catch {
+					case e: Exception => 
+						println("SyncError: " + e.toString);
+						e.printStackTrace;
 				}
-			} catch {
-				case e: Exception => 
-					println("SyncError: " + e.toString);
-					e.printStackTrace;
+				calcNextSchedule;
 			}
-			calcNextSchedule;
 		});
 		println("Next schedule=" + next);
 		next;
