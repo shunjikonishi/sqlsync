@@ -8,6 +8,7 @@ import play.api.mvc.Action;
 import play.api.db.DB;
 import play.api.data.Form;
 import play.api.data.Forms.mapping;
+import play.api.data.Forms.tuple;
 import play.api.data.Forms.text;
 import play.api.data.Forms.number;
 import play.api.data.Forms.boolean;
@@ -192,4 +193,42 @@ object Application extends Controller with AccessControl {
 			case e: Exception => Ok(e.toString);
 		}
 	}
+	
+	private val apiForm = Form(tuple(
+		"date" -> text,
+		"name" -> text
+	));
+	
+	def api = filterAction { implicit request =>
+		val data = apiForm.bindFromRequest;
+		if (data.hasErrors) {
+			BadRequest(data.errors.mkString("<br>"));
+		} else {
+			val (dateStr, name) = data.get;
+			try {
+				val list = if (name == "*") {
+					man.list.filter(_.enabled);
+				} else {
+					man.get(name) match {
+						case Some(info) => List(info);
+						case None => Nil;
+					}
+				}
+				val listWithDate = if (dateStr.forall(_ == '0')) {
+					list;
+				} else {
+					val date = new SimpleDateFormat("yyyyMMddHHmmss").parse(dateStr);
+					list.map(_.copy(lastExecuted = date));
+				}
+				println("API execute: (" + name + ", " + dateStr + "), count = " + list.size);
+				Salesforce(man).executeAll(listWithDate);
+				Ok("OK");
+			} catch {
+				case e: Exception =>
+					e.printStackTrace;
+					InternalServerError(e.toString);
+			}
+		}
+	}
+	
 }
