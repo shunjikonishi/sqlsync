@@ -10,6 +10,7 @@ import play.api.data.Form;
 import play.api.data.Forms.mapping;
 import play.api.data.Forms.tuple;
 import play.api.data.Forms.text;
+import play.api.data.Forms.optional;
 import play.api.data.Forms.number;
 import play.api.data.Forms.boolean;
 import play.api.libs.json.JsArray;
@@ -196,7 +197,8 @@ object Application extends Controller with AccessControl {
 	
 	private val apiForm = Form(tuple(
 		"date" -> text,
-		"name" -> text
+		"name" -> text,
+		"msg" -> optional(text)
 	));
 	
 	def api = filterAction { implicit request =>
@@ -204,7 +206,7 @@ object Application extends Controller with AccessControl {
 		if (data.hasErrors) {
 			BadRequest(data.errors.mkString("<br>"));
 		} else {
-			val (dateStr, name) = data.get;
+			val (dateStr, name, msg) = data.get;
 			try {
 				val list = if (name == "*") {
 					man.list.filter(_.enabled);
@@ -220,7 +222,7 @@ object Application extends Controller with AccessControl {
 					val date = new SimpleDateFormat("yyyyMMddHHmmss").parse(dateStr);
 					list.map(_.copy(lastExecuted = date));
 				}
-				println("API execute: (" + name + ", " + dateStr + "), count = " + list.size);
+				println("API execute: (" + name + ", " + dateStr + "), msg=" + msg.getOrElse("") + ", count=" + list.size);
 				Salesforce(man).executeAll(listWithDate);
 				Ok("OK");
 			} catch {
