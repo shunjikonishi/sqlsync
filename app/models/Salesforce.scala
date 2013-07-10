@@ -184,7 +184,7 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 			val job = bulkClient.getJobStatus(new JobInfo(info.jobId.get));
 			println("ObserveJob: " + info.name + ": " + job.getState);
 			if (job.getState == JobInfo.JobState.Closed) {
-				val newInfo = info.copy(
+				val newInfo = storage.get(info.name).get.copy(
 					jobId = None, 
 					updateCount = job.getRecordsProcessed, 
 					errorCount = job.getRecordsFailed
