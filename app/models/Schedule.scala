@@ -6,6 +6,8 @@ import java.text.SimpleDateFormat;
 
 object Schedule {
 	
+	val SCHEDULE_ENABLED = sys.env.get("SCHEDULE_ENABLED").getOrElse("true").toBoolean;
+	
 	def strToTime(str: String) = {
 		var array = str.split(":");
 		array.length match {
@@ -52,44 +54,45 @@ class Schedule(storage: StorageManager) {
 		ret;
 	}
 	
-	def calcNextSchedule: Date = {
-		val cal = Calendar.getInstance;
-		val time1 = strToTime(nextSettingTime);
-		val time2 = calendarToTime(cal);
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		cal.add(Calendar.SECOND, time1);
-		if (time1 < time2) {
-			cal.add(Calendar.DAY_OF_MONTH, 1);
-		}
-		val next = cal.getTime;
-		registeredSchedule.foreach { c =>
-			c.cancel;
-			registeredSchedule = None;
-		}
-		val duration = new FiniteDuration(next.getTime - System.currentTimeMillis, TimeUnit.MILLISECONDS);
-		registeredSchedule = Option(Akka.system.scheduler.scheduleOnce(duration) {
-			if (Akka.system.isTerminated) {
-				println("Terminate Akka. Skip schedule");
-			} else {
-				val date = new Date();
-				val salesforce = Salesforce(storage);
-				val list = storage.list.filter(_.enabled);
-				println("executeAll: date=" + date + ", count=" + list.size);
-				try {
-					salesforce.executeAll(list);
-				} catch {
-					case e: Exception => 
-						println("SyncError: " + e.toString);
-						e.printStackTrace;
-				}
-				calcNextSchedule;
+	def calcNextSchedule: Unit = {
+		if (SCHEDULE_ENABLED) {
+			val cal = Calendar.getInstance;
+			val time1 = strToTime(nextSettingTime);
+			val time2 = calendarToTime(cal);
+			cal.set(Calendar.HOUR_OF_DAY, 0);
+			cal.set(Calendar.MINUTE, 0);
+			cal.set(Calendar.SECOND, 0);
+			cal.set(Calendar.MILLISECOND, 0);
+			cal.add(Calendar.SECOND, time1);
+			if (time1 < time2) {
+				cal.add(Calendar.DAY_OF_MONTH, 1);
 			}
-		});
-		println("Next schedule=" + next);
-		next;
+			val next = cal.getTime;
+			registeredSchedule.foreach { c =>
+				c.cancel;
+				registeredSchedule = None;
+			}
+			val duration = new FiniteDuration(next.getTime - System.currentTimeMillis, TimeUnit.MILLISECONDS);
+			registeredSchedule = Option(Akka.system.scheduler.scheduleOnce(duration) {
+				if (Akka.system.isTerminated) {
+					println("Terminate Akka. Skip schedule");
+				} else {
+					val date = new Date();
+					val salesforce = Salesforce(storage);
+					val list = storage.list.filter(_.enabled);
+					println("executeAll: date=" + date + ", count=" + list.size);
+					try {
+						salesforce.executeAll(list);
+					} catch {
+						case e: Exception => 
+							println("SyncError: " + e.toString);
+							e.printStackTrace;
+					}
+					calcNextSchedule;
+				}
+			});
+			println("Next schedule=" + next);
+		}
 	}
 	override def toString = scheduledTime;
 }

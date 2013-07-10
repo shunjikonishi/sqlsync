@@ -124,6 +124,8 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 	}
 	
 	def execute(date: Date, info: SqlInfo, queue: List[SqlInfo] = Nil) = {
+		println("Start: " + info.name + ", targetDate=" + date);
+		
 		val con = DB.getConnection();
 		val now = new Date();
 		val newInfo = info.update(date, now);
