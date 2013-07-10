@@ -211,7 +211,7 @@ object Application extends Controller with AccessControl {
 				} else {
 					man.get(name) match {
 						case Some(info) => List(info);
-						case None => Nil;
+						case None => throw new Exception("Undefined name: " + name);
 					}
 				}
 				val listWithDate = if (dateStr.forall(_ == '0')) {
