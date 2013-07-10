@@ -115,7 +115,15 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 		}
 	}
 	
-	def execute(date: Date, info: SqlInfo) = {
+	def executeAll(list: List[SqlInfo]): Unit = {
+		if (list.size > 0) {
+			val head = list.head;
+			val tail = list.tail;
+			execute(head.lastExecuted, head, tail);
+		}
+	}
+	
+	def execute(date: Date, info: SqlInfo, queue: List[SqlInfo] = Nil) = {
 		val con = DB.getConnection();
 		val now = new Date();
 		val newInfo = info.update(date, now);
@@ -125,14 +133,14 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 		
 		request.setExternalIdFieldName(info.externalIdFieldName);
 		request.setParams(new Timestamp(date.getTime));
-		request.addSQLSynchronizerListener(new MyListener(con, newInfo));
+		request.addSQLSynchronizerListener(new MyListener(con, newInfo, queue));
 		client.syncSQL(request);
 		
 		storage.setDate("lastExecuted", now)
 		newInfo;
 	}
 	
-	private class MyListener(con: Connection, private var info: SqlInfo) extends SQLSynchronizerListener {
+	private class MyListener(con: Connection, private var info: SqlInfo, queue: List[SqlInfo]) extends SQLSynchronizerListener {
 		
 		import SQLSynchronizerEvent.EventType._;
 		
@@ -145,59 +153,48 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 			} else {
 				"";
 			}
-			val newInfo = (if (e.getType == ERROR) 
-					info.copy(lastExecuted=info.prevExecuted)
-				else if (e.getType == OPEN_JOB) {
-					start;
-					info.copy(jobId=Some(e.getJobInfo.getId))
-				} else
-					info
-		 		).copy(status=e.getType.toString, message=msg);
+			val newInfo = (if (e.getType == ERROR) {
+					info.copy(lastExecuted=info.prevExecuted);
+				} else if (e.getType == OPEN_JOB) {
+					info.copy(jobId=Some(e.getJobInfo.getId));
+				} else {
+					info;
+		 		}).copy(status=e.getType.toString, message=msg);
 			storage.update(newInfo);
 			if (e.getType == ERROR || e.getType == MAKE_CSV || e.getType == NOT_PROCESSED) {
 				con.close;
+			}
+			if (e.getType == OPEN_JOB) {
+				scheduleObserve(newInfo, queue);
+			}
+			if (e.getType == ERROR || e.getType == NOT_PROCESSED || e.getType == ABORT_JOB) {
+				executeAll(queue);
 			}
 			info = newInfo;
 		}
 	}
 	
-	private var observeJob: Boolean = false;
-	
-	private def start: Unit = {
-		if (!observeJob) {
-			observeJob = true;
-			scheduleObserve
-		}
-	}
-	
-	private def scheduleObserve: Unit = {
+	private def scheduleObserve(info: SqlInfo, queue: List[SqlInfo]): Unit = {
 		import play.api.libs.concurrent.Akka;
 		import play.api.Play.current;
 		import scala.concurrent.duration.DurationInt;
 		import play.api.libs.concurrent.Execution.Implicits.defaultContext;
 		
-		Akka.system.scheduler.scheduleOnce(10 seconds) {
-			val list = storage.list.filter(_.jobId.nonEmpty);
-			println("ObserveJob: " + list.size);
-			if (list.isEmpty) {
-				observeJob = false;
-			} else {
-				list.foreach { info =>
-					val job = bulkClient.getJobStatus(new JobInfo(info.jobId.get));
-					if (job.getState == JobInfo.JobState.Closed) {
-						val newInfo = info.copy(
-							jobId = None, 
-							updateCount = job.getRecordsProcessed, 
-							errorCount = job.getRecordsFailed
-						);
-						storage.update(newInfo);
-						if (newInfo.errorCount > 0) {
-							println("SyncError: " + newInfo.name + ", errorCount=" + newInfo.errorCount);
-						}
-					}
+		Akka.system.scheduler.scheduleOnce(5 seconds) {
+			val job = bulkClient.getJobStatus(new JobInfo(info.jobId.get));
+			println("ObserveJob: " + info.name + ": " + job.getState);
+			if (job.getState == JobInfo.JobState.Closed) {
+				val newInfo = info.copy(
+					jobId = None, 
+					updateCount = job.getRecordsProcessed, 
+					errorCount = job.getRecordsFailed
+				);
+				storage.update(newInfo);
+				if (newInfo.errorCount > 0) {
+					println("SyncError: " + newInfo.name + ", errorCount=" + newInfo.errorCount);
 				}
-				scheduleObserve;
 			}
+			executeAll(queue);
 		}
 	}
 	

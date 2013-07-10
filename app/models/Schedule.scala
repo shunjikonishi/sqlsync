@@ -79,9 +79,7 @@ class Schedule(storage: StorageManager) {
 				val list = storage.list.filter(_.enabled);
 				println("executeAll: date=" + date + ", count=" + list.size);
 				try {
-					list.foreach { info =>
-						salesforce.execute(info.lastExecuted, info);
-					}
+					salesforce.executeAll(list);
 				} catch {
 					case e: Exception => 
 						println("SyncError: " + e.toString);
