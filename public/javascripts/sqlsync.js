@@ -3,6 +3,8 @@ if (typeof(flect.app) == "undefined") flect.app = {};
 if (typeof(flect.app.sqlsync) == "undefined") flect.app.sqlsync = {};
 
 flect.app.sqlsync.SqlSync = function(dragged) {
+	var MSG = flect.app.sqlsync.MSG;
+	
 	function strToDate(str) {
 		var y = parseInt(str.substring(0, 4)),
 			m = parseInt(str.substring(5, 7)),
@@ -98,11 +100,11 @@ flect.app.sqlsync.SqlSync = function(dragged) {
 			var sql = $("#sql").val(),
 				date = $("#sql-datetime").val();
 			if (!sql) {
-				alert("SQLを入力してください");
+				alert(MSG.sqlRequired);
 				return;
 			}
 			if (!date) {
-				alert("対象日時を設定してください");
+				alert(MSG.dateRequired);
 				return;
 			}
 			var params = [
@@ -187,7 +189,7 @@ flect.app.sqlsync.SqlSync = function(dragged) {
 					}
 					if (time) {
 						if (time == cur) {
-							alert("その時刻はすでに設定されています");
+							alert(MSG.duplicateTime);
 							return;
 						} else if (time && time < cur) {
 							ret += time + ",";
@@ -209,7 +211,7 @@ flect.app.sqlsync.SqlSync = function(dragged) {
 		btnScheduleDel = $("#btnScheduleDel").click(function() {
 			var selected = selSchedule2.val();
 			if (!selected || selected.length == 0) {
-				alert("削除する時刻を指定してください。");
+				alert(MSG.selectTimeToRemove);
 				return;
 			}
 			var options = selSchedule2.find("option");
@@ -332,7 +334,7 @@ flect.app.sqlsync.SqlSync = function(dragged) {
 	});
 	table.find("button").click(function() {
 		var name = $(this).parents("tr").attr("data-name");
-		if (confirm(name + "を削除しますか？")) {
+		if (confirm(MSG.format(MSG.confirmDelete, name))) {
 			$.ajax({
 				"url" : "/sync/delete", 
 				"type" : "POST",

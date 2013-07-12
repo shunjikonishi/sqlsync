@@ -1,0 +1,35 @@
+@()(implicit lang: Lang)
+@base("SQLSync") {
+<div id="header" class="navbar navbar-inverse">
+	<div class="navbar-inner">
+		<div class="container-fluid">
+			<span class="brand" class="active">SQLSync</span>
+			<ul class="nav">
+				<li><a href="/assets/manual/@lang.language/manual.html">@Messages("howToUse")</a></li>
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown">@Messages("language")<b class="caret"></b></a>
+					<ul class="dropdown-menu">
+						<li><a href="/i18n/setlang?lang=en">@Messages("english")</a></li>
+						<li><a href="/i18n/setlang?lang=ja">@Messages("japanese")</a></li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>
+<a href="https://github.com/shunjikonishi/sqlsync"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png" alt="Fork me on GitHub"></a><div class="container">
+	<!-- Main hero unit for a primary marketing message or call to action -->
+	<div class="hero-unit">
+		<h1>Furoku</h1>
+		<h2>SQLSync</h2>
+		<p>&nbsp;</p>
+		<p><a href="/main" class="btn btn-primary btn-large">@Messages("useIt") &raquo;</a></p>
+	</div>
+</div> <!-- /container -->
+<div class="navbar navbar-fixed-bottom">
+	<footer>
+		<div class="copy-right">COPYRIGHT（C）FLECT CO.,LTD. ALL RIGHTS RESERVED</div>
+		<div style="clear:both"></div>
+	</footer>
+</div>
+}

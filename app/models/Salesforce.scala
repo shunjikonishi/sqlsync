@@ -7,6 +7,8 @@ import java.sql.Timestamp;
 import play.api.db.DB;
 import play.api.Play.current;
 import play.api.cache.Cache;
+import play.api.i18n.Messages;
+import play.api.i18n.Lang;
 import jp.co.flect.salesforce.SalesforceClient;
 import jp.co.flect.salesforce.SObjectDef;
 import jp.co.flect.salesforce.bulk.SQLSyncRequest;
@@ -31,7 +33,7 @@ object Salesforce {
 	private val PROXY_USERNAME = sys.env.get("PROXY_USERNAME").getOrElse(null);
 	private val PROXY_PASSWORD = sys.env.get("PROXY_PASSWORD").getOrElse(null);
 	
-	def apply(storage: StorageManager) = {
+	def apply(storage: StorageManager)(implicit lang: Lang) = {
 		val client = Cache.getOrElse[SalesforceClient]("salesforce.cacheKey", 10 * 60) {
 			val client = new SalesforceClient(new File(WSDL));
 			PROXY_HOST.foreach { s =>
@@ -41,13 +43,13 @@ object Salesforce {
 			println("Create SalesforceClient: " + new Date());
 			client;
 		}
-		new Salesforce(storage, client);
+		new Salesforce(storage, client, lang);
 	}
 	
 	case class ValidationResult(hasError: Boolean, msg: String);
 }
 
-class Salesforce(storage: StorageManager, client: SalesforceClient) {
+class Salesforce(storage: StorageManager, client: SalesforceClient, implicit val lang: Lang) {
 	
 	import Salesforce._;
 	
@@ -80,7 +82,7 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 			if (notFound.size == 0) {
 				new ValidationResult(false, null);
 			} else {
-				new ValidationResult(true, "フィールド名が不正です。: " + notFound.mkString(","));
+				new ValidationResult(true, Messages("invalidFieldName", notFound.mkString(",")));
 			}
 		}
 		try {
@@ -94,17 +96,17 @@ class Salesforce(storage: StorageManager, client: SalesforceClient) {
 				.filter(_.isComplete)
 				.getOrElse(client.describeSObject(info.objectName));
 			if (info.name == "") {
-				new ValidationResult(true, "名前は必須です。");
+				new ValidationResult(true, Messages("nameRequired"));
 			} else if (!update && !storage.get(info.name).isEmpty) {
-				new ValidationResult(true, "名前が重複しています。: " + info.name);
+				new ValidationResult(true, Messages("duplicateName", info.name));
 			} else if (objectDef == null) {
-				new ValidationResult(true, "オブジェクトが見つかりません。: " + info.objectName);
+				new ValidationResult(true, Messages("objectNotFound", info.objectName));
 			} else if (info.sql.filter(_ == '?').length != 1) {
-				new ValidationResult(true, "日付型フィールドのパラメータが必要です。: " + info.sql);
+				new ValidationResult(true, Messages("dateParameterRequired", info.sql));
 			} else if (objectDef.getField(info.externalIdFieldName) == null || 
 				!objectDef.getField(info.externalIdFieldName).isExternalId) 
 			{
-				new ValidationResult(true, "外部IDが不正です。: " + info.externalIdFieldName);
+				new ValidationResult(true, Messages("invalidExternalIdField", info.externalIdFieldName));
 			} else {
 				columnCheck(model, objectDef);
 			}

@@ -1,0 +1,10 @@
+@charset "utf-8";
+
+body { 
+	overflow:auto;
+}
+
+.copy-right {
+	margin-top:20px;
+	width: 100%;
+}

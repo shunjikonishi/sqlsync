@@ -14,6 +14,7 @@ import play.api.data.Forms.optional;
 import play.api.data.Forms.number;
 import play.api.data.Forms.boolean;
 import play.api.libs.json.JsArray;
+import play.api.i18n.Messages;
 
 import models.Schedule;
 import models.SqlInfo;
@@ -31,6 +32,10 @@ object Application extends Controller with AccessControl {
 	
 	private lazy val objectList = {
 		Salesforce(man).listObjectNames;
+	}
+	
+	def index = filterAction { implicit request =>
+		Ok(views.html.index());
 	}
 	
 	def main = filterAction { implicit request =>
@@ -82,7 +87,7 @@ object Application extends Controller with AccessControl {
 			} else {
 				val oldInfo = man.get(oldName);
 				if (oldInfo.isEmpty) {
-					Ok("更新対象のオブジェクトが見つかりません: " + oldName);
+					Ok(Messages("updateTargetNotFound", oldName));
 				} else {
 					val newInfo = info.merge(oldInfo.get);
 					man.update(newInfo);
@@ -184,7 +189,7 @@ object Application extends Controller with AccessControl {
 			val enabled = RequestUtils.getPostParam("enabled").get;
 			val info = man.get(name);
 			if (info.isEmpty) {
-				Ok("更新対象のオブジェクトが見つかりません: " + name);
+				Ok(Messages("updateTargetNotFound", name));
 			} else {
 				val newInfo = info.get.copy(enabled=enabled.toBoolean);
 				man.update(newInfo);

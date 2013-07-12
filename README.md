@@ -40,7 +40,7 @@ Install
   - プロダクション環境に接続する場合は不要です。
   - Sandbox環境に接続する場合は「conf/salesforce/sandbox.wsdl」を指定してください。
 - TIMEZONE: タイムゾーン。日本で使用する場合は「Asia/Tokyo」としてください。
-
+- HEROKU_APPLICATION_NAME: Herokuアプリケーション名
 
 IP制限によりSalesforceへの接続にProxyを使用する場合はさらに以下を設定してください。
 

@@ -1,0 +1,118 @@
+updateTargetNotFound=Update target not found: {0}
+updateTargetNotFound[ja]=更新対象のオブジェクトが見つかりません: {0}
+
+invalidFieldName=Invalid field name: {0}
+invalidFieldName[ja]=フィールド名が不正です: {0}
+
+nameRequired=Name is required.
+nameRequired[ja]=名前は必須です
+
+duplicateName=Name duplicated.: {0}
+duplicateName[ja]=名前が重複しています: {0}
+
+objectNotFound=Object not found.: {0}
+objectNotFound[ja]=オブジェクトが見つかりません: {0}
+
+dateParameterRequired=A parameter of date type is required.: {0}
+dateParameterRequired[ja]=日付型フィールドのパラメータが必要です: {0}
+
+invalidExternalIdField=Invalid external ID field.: {0}
+invalidExternalIdField[ja]=不正な外部IDです: {0}
+
+ui.sqlRequired=SQL is required.
+ui.sqlRequired[ja]=SQLは必須です
+
+ui.dateRequired=Target datetime is required.
+ui.dateRequired[ja]=対象日時は必須です
+
+ui.duplicateTime=Time duplicated.
+ui.duplicateTime[ja]=その時刻はすでに設定されています
+
+ui.selectTimeToRemove=Select time to remove.
+ui.selectTimeToRemove[ja]=削除する時刻を選択してください
+
+ui.confirmDelete=Delete {0}. Are you sure?
+ui.confirmDelete[ja]={0}を削除しますか？
+
+language=Language
+language[ja]=言語
+
+english=English
+english[ja]=英語
+
+japanese=Japanese
+japanese[ja]=日本語
+
+howToUse=How to use
+howToUse[ja]=使い方
+
+sqlList=Sync SQL list
+sqlList[ja]=同期SQL一覧
+
+name=Name
+name[ja]=名前
+
+enabled=Enabled
+enabled[ja]=有効
+
+description=Description
+description[ja]=説明
+
+objectName=Object Name
+objectName[ja]=オブジェクト名
+
+externalId=ExternalId
+externalId[ja]=外部ID
+
+prevTargetTime=Prev time
+prevTargetTime[ja]=前回対象日時
+
+nextTargetTime=Next time
+nextTargetTime[ja]=次回対象日時
+
+status=Status
+status[ja]=ステータス
+
+message=Message
+message[ja]=メッセージ
+
+numberOfRecords=Num of rec
+numberOfRecords[ja]=件数
+
+delete=Delete
+delete[ja]=削除
+
+scheduleTime=Schedule time
+scheduleTime[ja]=スケジュール時刻
+
+add=Add
+add[ja]=追加
+
+displayJobStatus=Display job status
+displayJobStatus[ja]=同期ジョブ状態確認
+
+export=Export
+export[ja]=エクスポート
+
+import=Import
+import[ja]=インポート
+
+targetTime=Target time
+targetTime[ja]=対象日時
+
+update=Update
+update[ja]=更新
+
+insert=Insert
+insert[ja]=新規登録
+
+testExecute=SQL test
+testExecute[ja]=SQLテスト実行
+
+syncExecute=Execute sync
+syncExecute[ja]=同期実行
+
+useIt=Go to main
+useIt[ja]=メイン画面
+
+
