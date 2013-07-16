@@ -135,6 +135,7 @@ class Salesforce(storage: StorageManager, client: SalesforceClient, implicit val
 		val request = new SQLSyncRequest(con, info.sql, info.objectName);
 		storage.update(newInfo);
 		
+		request.setParallel(false);
 		request.setExternalIdFieldName(info.externalIdFieldName);
 		request.setParams(new Timestamp(date.getTime));
 		request.addSQLSynchronizerListener(new MyListener(con, newInfo, queue));
@@ -188,7 +189,7 @@ class Salesforce(storage: StorageManager, client: SalesforceClient, implicit val
 			val job = bulkClient.getJobStatus(new JobInfo(info.jobId.get));
 			println("ObserveJob: " + info.name + ": " + job.getState);
 			println(job);
-			if (job.getState == JobInfo.JobState.Closed) {
+			if (job.isCompleted) {
 				val newInfo = storage.get(info.name).get.copy(
 					jobId = None, 
 					updateCount = job.getRecordsProcessed, 
