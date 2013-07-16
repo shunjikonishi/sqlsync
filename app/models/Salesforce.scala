@@ -187,6 +187,7 @@ class Salesforce(storage: StorageManager, client: SalesforceClient, implicit val
 		Akka.system.scheduler.scheduleOnce(5 seconds) {
 			val job = bulkClient.getJobStatus(new JobInfo(info.jobId.get));
 			println("ObserveJob: " + info.name + ": " + job.getState);
+			println(job);
 			if (job.getState == JobInfo.JobState.Closed) {
 				val newInfo = storage.get(info.name).get.copy(
 					jobId = None, 
