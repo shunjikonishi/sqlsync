@@ -199,8 +199,10 @@ class Salesforce(storage: StorageManager, client: SalesforceClient, implicit val
 				if (newInfo.errorCount > 0) {
 					println("SyncError: " + newInfo.name + ", errorCount=" + newInfo.errorCount);
 				}
+				executeAll(queue);
+			} else {
+				scheduleObserve(info, queue);
 			}
-			executeAll(queue);
 		}
 	}
 	
