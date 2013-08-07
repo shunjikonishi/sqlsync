@@ -117,19 +117,18 @@ class Salesforce(storage: StorageManager, client: SalesforceClient, implicit val
 		}
 	}
 	
-	def executeAll(list: List[SqlInfo]): Unit = {
+	def executeAll(list: List[SqlInfo], now: Date): Unit = {
 		if (list.size > 0) {
 			val head = list.head;
 			val tail = list.tail;
-			execute(head.lastExecuted, head, tail);
+			execute(head.lastExecuted, now, head, tail);
 		}
 	}
 	
-	def execute(date: Date, info: SqlInfo, queue: List[SqlInfo] = Nil) = {
+	def execute(date: Date, now: Date, info: SqlInfo, queue: List[SqlInfo] = Nil) = {
 		println("Start: " + info.name + ", targetDate=" + date);
 		
 		val con = DB.getConnection();
-		val now = new Date();
 		val newInfo = info.update(date, now);
 		
 		val request = new SQLSyncRequest(con, info.sql, info.objectName);
@@ -138,14 +137,14 @@ class Salesforce(storage: StorageManager, client: SalesforceClient, implicit val
 		request.setParallel(false);
 		request.setExternalIdFieldName(info.externalIdFieldName);
 		request.setParams(new Timestamp(date.getTime));
-		request.addSQLSynchronizerListener(new MyListener(con, newInfo, queue));
+		request.addSQLSynchronizerListener(new MyListener(con, newInfo, queue, now));
 		client.syncSQL(request);
 		
 		storage.setDate("lastExecuted", now)
 		newInfo;
 	}
 	
-	private class MyListener(con: Connection, private var info: SqlInfo, queue: List[SqlInfo]) extends SQLSynchronizerListener {
+	private class MyListener(con: Connection, private var info: SqlInfo, queue: List[SqlInfo], now: Date) extends SQLSynchronizerListener {
 		
 		import SQLSynchronizerEvent.EventType._;
 		
@@ -170,16 +169,16 @@ class Salesforce(storage: StorageManager, client: SalesforceClient, implicit val
 				con.close;
 			}
 			if (e.getType == OPEN_JOB) {
-				scheduleObserve(newInfo, queue);
+				scheduleObserve(newInfo, queue, now);
 			}
 			if (e.getType == ERROR || e.getType == NOT_PROCESSED || e.getType == ABORT_JOB) {
-				executeAll(queue);
+				executeAll(queue, now);
 			}
 			info = newInfo;
 		}
 	}
 	
-	private def scheduleObserve(info: SqlInfo, queue: List[SqlInfo]): Unit = {
+	private def scheduleObserve(info: SqlInfo, queue: List[SqlInfo], now: Date): Unit = {
 		import play.api.libs.concurrent.Akka;
 		import play.api.Play.current;
 		import scala.concurrent.duration.DurationInt;
@@ -199,9 +198,9 @@ class Salesforce(storage: StorageManager, client: SalesforceClient, implicit val
 				if (newInfo.errorCount > 0) {
 					println("SyncError: " + newInfo.name + ", errorCount=" + newInfo.errorCount);
 				}
-				executeAll(queue);
+				executeAll(queue, now);
 			} else {
-				scheduleObserve(info, queue);
+				scheduleObserve(info, queue, now);
 			}
 		}
 	}

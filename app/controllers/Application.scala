@@ -116,7 +116,7 @@ object Application extends Controller with AccessControl {
 			try {
 				val strDate = RequestUtils.getPostParam("sql-datetime").get;
 				val date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(strDate);
-				Salesforce(man).execute(date, info);
+				Salesforce(man).execute(date, new Date(), info);
 				Ok("OK");
 			} catch {
 				case e: Exception =>
@@ -228,7 +228,7 @@ object Application extends Controller with AccessControl {
 					list.map(_.copy(lastExecuted = date));
 				}
 				println("API execute: (" + name + ", " + dateStr + "), msg=" + msg.getOrElse("") + ", count=" + list.size);
-				Salesforce(man).executeAll(listWithDate);
+				Salesforce(man).executeAll(listWithDate, new Date());
 				Ok("OK");
 			} catch {
 				case e: Exception =>
