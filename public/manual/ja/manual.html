@@ -234,67 +234,173 @@
 <section>
 	<h1>WebAPI</h1>
 	<p>
-	WebAPIを介して外部から同期処理を実行することが可能です。
+	WebAPIを介して外部から同期処理を実行したり登録されたSQLの一覧を取得することが可能です。
 	</p>
-	<h4>Endpoint</h4>
-	<p>
-	/api/execute
-	</p>
-	<h4>HTTPメソッド</h4>
-	<p>
-	POST
-	</p>
-	<h4>パラメータ</h4>
-	<table border="1">
-		<tr>
-			<th>date</th>
-			<td>実行対象日時。「yyyyMMddHHmmss」形式。または0。0を指定した場合は前回の実行日時が対象になります。</td>
-		</tr>
-		<tr>
-			<th>name</th>
-			<td>実行するSQLの名前。「*」を指定した場合は有効なすべてのSQLが対象になります。</td>
-		</tr>
-		<tr>
-			<th>msg</th>
-			<td>任意のメッセージ。実行時にログ出力されます。</td>
-		</tr>
-	</table>
-	<h4>レスポンス</h4>
-	<table border="1">
-		<tr>
-			<th>正常終了</th>
-			<td>
-				200 OK。<br>
-				ここでの正常終了は「ジョブの投入に成功した」という意味です。<br>
-				実際にジョブで何件のデータが成功(または失敗)したかはSalesforceの一括データ読み込みジョブ画面で確認してください。
-			</td>
-		</tr>
-		<tr>
-			<th>パラメータ不備</th>
-			<td>
-				400 BadRequest。<br>
-				nameまたはdateパラメータが無い場合
-			</td>
-		</tr>
-		<tr>
-			<th>エラー</th>
-			<td>
-				500 Internal Server Error
-				nameで指定したSQLが存在しない。SalesforceまたはRDBとの通信障害等
-			</td>
-		</tr>
-	</table>
-	<h4>サンプル</h4>
-	<p>
-	WebAPIはcurlから実行できます。
-	</p>
-		<code><pre
+	<div class="memo">
+		<p>インストール時にセキュリティ設定を行っている場合はWebAPIの実行もその制限を受けます。</p>
+	</div>
+	<section>
+		<h1>実行</h1>
+		<h4>Endpoint</h4>
+		<p>
+		/api/execute
+		</p>
+		<h4>HTTPメソッド</h4>
+		<p>
+		POST
+		</p>
+		<h4>パラメータ</h4>
+		<table border="1">
+			<tr>
+				<th>date</th>
+				<td>実行対象日時。「yyyyMMddHHmmss」形式。または0。0を指定した場合は前回の実行日時が対象になります。</td>
+			</tr>
+			<tr>
+				<th>name</th>
+				<td>実行するSQLの名前。「*」を指定した場合は有効なすべてのSQLが対象になります。</td>
+			</tr>
+			<tr>
+				<th>msg</th>
+				<td>任意のメッセージ。実行時にログ出力されます。</td>
+			</tr>
+		</table>
+		<h4>レスポンス</h4>
+		<table border="1">
+			<tr>
+				<th>正常終了</th>
+				<td>
+					200 OK。<br>
+					ここでの正常終了は「ジョブの投入に成功した」という意味です。<br>
+					実際にジョブで何件のデータが成功(または失敗)したかはSalesforceの一括データ読み込みジョブ画面で確認してください。
+				</td>
+			</tr>
+			<tr>
+				<th>パラメータ不備</th>
+				<td>
+					400 BadRequest。<br>
+					nameまたはdateパラメータが無い場合
+				</td>
+			</tr>
+			<tr>
+				<th>エラー</th>
+				<td>
+					500 Internal Server Error
+					nameで指定したSQLが存在しない。SalesforceまたはRDBとの通信障害等
+				</td>
+			</tr>
+		</table>
+		<h4>サンプル</h4>
+			<code><pre
 >curl -i -d date=20130701000000 -d name=hoge http://&lt;HOSTNAME>/api/execute
 curl -i -d date=0 -d name=* http://&lt;HOSTNAME>/api/execute
 </pre></code>
-		<div class="memo">
-			<p>インストール時にセキュリティ設定を行っている場合はWebAPIの実行もその制限を受けます。</p>
-		</div>
+	</section>
+	<section>
+		<h1>SQL一覧取得</h1>
+		<h4>Endpoint</h4>
+		<p>
+		/api/list.json
+		</p>
+		<h4>HTTPメソッド</h4>
+		<p>
+		GET
+		</p>
+		<h4>パラメータ</h4>
+		<p>
+		なし
+		</p>
+		<h4>レスポンス</h4>
+		<p>
+		200 OK。(障害以外では失敗することがありません。)
+		</p>
+		<p>
+		レスポンスボディで以下のオブジェクトがJSONの配列で返されます。
+		</p>
+		<table border="1">
+			<tr>
+				<th>name</th>
+				<td>
+					名前
+				</td>
+			</tr>
+			<tr>
+				<th>desc</th>
+				<td>
+					任意の説明
+				</td>
+			</tr>
+			<tr>
+				<th>sql</th>
+				<td>
+					SQL
+				</td>
+			</tr>
+			<tr>
+				<th>objectName</th>
+				<td>
+					同期対象のオブジェクト
+				</td>
+			</tr>
+			<tr>
+				<th>externalIdFieldName</th>
+				<td>
+					同期対象オブジェクトの外部IDフィールド名
+				</td>
+			</tr>
+			<tr>
+				<th>prevTargetTime</th>
+				<td>
+					前回対象日時
+				</td>
+			</tr>
+			<tr>
+				<th>nextTargetTime</th>
+				<td>
+					次回対象日時
+				</td>
+			</tr>
+			<tr>
+				<th>enabled</th>
+				<td>
+					スケジュールの有効／無効
+				</td>
+			</tr>
+			<tr>
+				<th>status</th>
+				<td>
+					最終実行のステータス
+				</td>
+			</tr>
+			<tr>
+				<th>message</th>
+				<td>
+					実行でエラーが発生した場合のエラーメッセージ
+				</td>
+			</tr>
+			<tr>
+				<th>message</th>
+				<td>
+					実行でエラーが発生した場合のエラーメッセージ
+				</td>
+			</tr>
+			<tr>
+				<th>updateCount</th>
+				<td>
+					最終実行の更新件数
+				</td>
+			</tr>
+			<tr>
+				<th>errorCount</th>
+				<td>
+					最終実行のエラー件数
+				</td>
+			</tr>
+		</table>
+		<h4>サンプル</h4>
+			<code><pre
+>curl -i http://&lt;HOSTNAME>/api/list.json
+</pre></code>
+	</section>
 </section>
 <footer>
 	<div class="copy-right">

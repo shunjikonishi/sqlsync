@@ -18,6 +18,7 @@ POST    /sql/model                  controllers.MySelectTool.colModel
 POST    /sql/data                   controllers.MySelectTool.data
 
 POST    /api/execute                controllers.Application.api
+GET     /api/list.json              controllers.Application.list
 
 GET     /i18n/setlang                     controllers.I18N.setLang(lang)
 GET     /i18n/:lang/messages.js           controllers.I18N.messages(lang)

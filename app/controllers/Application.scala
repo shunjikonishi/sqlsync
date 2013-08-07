@@ -238,4 +238,8 @@ object Application extends Controller with AccessControl {
 		}
 	}
 	
+	def list = filterAction { implicit request =>
+		val list = man.list.map(_.toJsonForApi);
+		Ok(JsArray(list)).as("application/json; charset=utf-8");
+	}
 }
