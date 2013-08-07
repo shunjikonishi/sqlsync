@@ -3,6 +3,7 @@ package models;
 import java.util.Calendar;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.net.InetAddress;
 
 object Schedule {
 	
@@ -91,7 +92,7 @@ class Schedule(storage: StorageManager) {
 					calcNextSchedule;
 				}
 			});
-			println("Next schedule=" + next);
+			println("Next schedule=" + next + ", host=" + InetAddress.getLocalHost().toString());
 		}
 	}
 	override def toString = scheduledTime;
