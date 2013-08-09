@@ -218,6 +218,29 @@
   FROM TABLE1
  WHERE UPDATE_DATE > ?       
 </pre></code>
+	<section>
+		<h1>環境変数によるSQL文の置換</h1>
+		<p>
+		環境変数に「VAR_&lt;変数名&gt;」で始まる変数を定義しておくとSQL文中の「:&lt;変数名&gt;」という文字列が環境変数で指定した値と置き換わります。
+		</p>
+		<code><pre
+>heroku config:add VAR_ENVIRONMENT=dev
+heroku config:add VAR_HOGE=hoge
+</pre></code>
+		<p>
+		と定義した場合、下記SQL文中の「:ENVIRONMENT」「:HOGE」はそれぞれ「dev」「hoge」に置き換わるので、例えば開発環境と本番環境で値を変更したい場合などに利用することができます。
+		</p>
+		<code><pre
+>SELECT ':ENVIRONMENT' as environtment__c,
+       ':HOGE' as test__c
+  FROM TABLE1
+</pre></code>
+		<p>環境変数の置換はSQLのパラメータではなく単純な文字列置換なのでSQL文中のどこでも使用できます。</p>
+		<div class="memo">
+			<p><em>注意</em></p>
+			<p>(今は直っているかもしれませんが、)heroku configで環境変数に日本語を設定するとアプリがクラッシュする上にロールバックもできない(heroku configやheroku releases:rollbackで元に戻そうとしてもコマンド自体がエラーになる)ので気をつけてください。</p>
+		</div>
+	</section>
 </section>
 <section>
 	<h1>実行の監視</h1>
