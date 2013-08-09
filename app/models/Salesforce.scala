@@ -143,8 +143,6 @@ class Salesforce(storage: StorageManager, client: SalesforceClient, implicit val
     val con = DB.getConnection();
     val newInfo = info.update(date, now);
     val sql = replaceVar(info.sql);
-println("test1: " + info.sql);
-println("test2: " + sql);
     val request = new SQLSyncRequest(con, sql, info.objectName);
     storage.update(newInfo);
     
