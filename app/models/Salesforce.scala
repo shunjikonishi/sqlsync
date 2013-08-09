@@ -33,11 +33,7 @@ object Salesforce {
   private val PROXY_USERNAME = sys.env.get("PROXY_USERNAME").getOrElse(null);
   private val PROXY_PASSWORD = sys.env.get("PROXY_PASSWORD").getOrElse(null);
 
-  private val VARIABLES = sys.env.filterKeys(_.startsWith("VAR_"))
-    .map{ case(key, value) =>
-      val newKey = key.substring("VAR_".length);
-      (newKey, value);
-    };
+  private val VARIABLES = sys.env.filterKeys(_.startsWith("VAR_"));
   
   def apply(storage: StorageManager)(implicit lang: Lang) = {
     val client = Cache.getOrElse[SalesforceClient]("salesforce.cacheKey", 10 * 60) {
