@@ -20,6 +20,6 @@ object MySelectTool extends SelectTool with AccessControl {
   
   override def getSQLandModel(sql: String) = {
     val sql2 = Salesforce.replaceVar(sql);
-0    super.getSQLandModel(sql2);
+    super.getSQLandModel(sql2);
   }
 }
