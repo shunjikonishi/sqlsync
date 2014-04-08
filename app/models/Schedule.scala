@@ -78,11 +78,11 @@ class Schedule(storage: StorageManager) {
 				if (Akka.system.isTerminated) {
 					println("Terminate Akka. Skip schedule");
 				} else {
-					val date = new Date();
-					val salesforce = Salesforce(storage);
-					val list = storage.list.filter(_.enabled);
-					println("executeAll: date=" + date + ", count=" + list.size);
 					try {
+						val date = new Date();
+						val salesforce = Salesforce(storage);
+						val list = storage.list.filter(_.enabled);
+						println("executeAll: date=" + date + ", count=" + list.size);
 						salesforce.executeAll(list, date);
 					} catch {
 						case e: Exception => 
