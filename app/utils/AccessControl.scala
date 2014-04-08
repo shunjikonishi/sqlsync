@@ -1,15 +1,12 @@
 package utils;
 
 import jp.co.flect.net.IPFilter;
-import play.api.mvc.Action;
-import play.api.mvc.AnyContent;
-import play.api.mvc.Request;
-import play.api.mvc.Result;
-import play.api.mvc.ResponseHeader;
-import play.api.mvc.Controller;
+import play.api.mvc._;
+import play.api.mvc.Results._;
 import org.apache.commons.codec.binary.Base64;
+import scala.concurrent.Future
 
-trait AccessControl extends Controller {
+object AccessControl extends ActionBuilder[Request] {
 	
 	//IP restriction setting, if required
 	private val IP_FILTER = sys.env.get("ALLOWED_IP")
@@ -25,7 +22,7 @@ trait AccessControl extends Controller {
 	
 	//Apply IP restriction and Basic authentication
 	//and Logging
-	def filterAction(f: Request[AnyContent] => Result): Action[AnyContent] = Action { request =>
+	def invokeBlock[A](request: Request[A], f: Request[A] => Future[SimpleResult]) = {
 		def ipFilter = {
 			IP_FILTER match {
 				case Some(filter) =>
@@ -53,9 +50,9 @@ trait AccessControl extends Controller {
 			}
 		}
 		if (!ipFilter) {
-			Forbidden;
+			Future.successful(Forbidden);
 		} else if (!basicAuth) {
-		    Unauthorized.withHeaders("WWW-Authenticate" -> "Basic realm=\"Secured\"");
+			Future.successful(Unauthorized.withHeaders("WWW-Authenticate" -> "Basic realm=\"Secured\""));
 		} else {
 			f(request);
 		}

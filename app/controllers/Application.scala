@@ -24,7 +24,7 @@ import models.MongoStorageManager;
 import utils.AccessControl;
 import utils.RequestUtils;
 
-object Application extends Controller with AccessControl {
+object Application extends Controller {
 	
 	private val man: StorageManager = new MongoStorageManager();
 	val scheduledTime = Schedule(man);
@@ -34,11 +34,11 @@ object Application extends Controller with AccessControl {
 		Salesforce(man).listObjectNames;
 	}
 	
-	def index = filterAction { implicit request =>
+	def index = AccessControl { implicit request =>
 		Ok(views.html.index());
 	}
 	
-	def main = filterAction { implicit request =>
+	def main = AccessControl { implicit request =>
 		val list = man.list;
 		val oList = objectList
 		val verifyPage = Salesforce(man).verifyPage;
@@ -58,7 +58,7 @@ object Application extends Controller with AccessControl {
 	);
 	
 	
-	def add = filterAction { implicit request =>
+	def add = AccessControl { implicit request =>
 		val data = form.bindFromRequest;
 		if (data.hasErrors) {
 			BadRequest;
@@ -74,7 +74,7 @@ object Application extends Controller with AccessControl {
 		}
 	}
 	
-	def update = filterAction { implicit request =>
+	def update = AccessControl { implicit request =>
 		val data = form.bindFromRequest;
 		if (data.hasErrors) {
 			BadRequest;
@@ -97,7 +97,7 @@ object Application extends Controller with AccessControl {
 		}
 	}
 	
-	def delete = filterAction { implicit request =>
+	def delete = AccessControl { implicit request =>
 		RequestUtils.getPostParam("name") match {
 			case Some(name) =>
 				man.remove(name);
@@ -107,7 +107,7 @@ object Application extends Controller with AccessControl {
 	}
 	
 	
-	def execute = filterAction { implicit request =>
+	def execute = AccessControl { implicit request =>
 		val data = form.bindFromRequest;
 		if (data.hasErrors) {
 			BadRequest(data.errors.mkString("<br>"));
@@ -126,14 +126,14 @@ object Application extends Controller with AccessControl {
 		}
 	}
 	
-	def setScheduleTime = filterAction { implicit request => 
+	def setScheduleTime = AccessControl { implicit request => 
 		val time = RequestUtils.getPostParam("scheduledTime").get
 		scheduledTime.scheduledTime = time;
 		scheduledTime.calcNextSchedule;
 		Ok("OK");
 	}
 	
-	def sort = filterAction { implicit request =>
+	def sort = AccessControl { implicit request =>
 		try {
 			val dragName = RequestUtils.getPostParam("dragName").get
 			val names = RequestUtils.getPostParams("sortNames");
@@ -144,12 +144,12 @@ object Application extends Controller with AccessControl {
 		}
 	}
 	
-	def exportJob = filterAction { implicit request =>
+	def exportJob = AccessControl { implicit request =>
 		val list = man.list.map(_.toJson);
 		Ok(JsArray(list)).as("application/octet-stream");
 	}
 	
-	def importJob = filterAction { implicit request =>
+	def importJob = AccessControl { implicit request =>
 		request.body.asMultipartFormData match {
 			case Some(mdf) =>
 				mdf.file("importFile") match {
@@ -183,7 +183,7 @@ object Application extends Controller with AccessControl {
 		}
 	}
 	
-	def setEnabled = filterAction { implicit request => 
+	def setEnabled = AccessControl { implicit request => 
 		try {
 			val name = RequestUtils.getPostParam("name").get
 			val enabled = RequestUtils.getPostParam("enabled").get;
@@ -206,7 +206,7 @@ object Application extends Controller with AccessControl {
 		"msg" -> optional(text)
 	));
 	
-	def api = filterAction { implicit request =>
+	def api = AccessControl { implicit request =>
 		val data = apiForm.bindFromRequest;
 		if (data.hasErrors) {
 			BadRequest(data.errors.mkString("<br>"));
@@ -238,7 +238,7 @@ object Application extends Controller with AccessControl {
 		}
 	}
 	
-	def list = filterAction { implicit request =>
+	def list = AccessControl { implicit request =>
 		val list = man.list.map(_.toJsonForApi);
 		Ok(JsArray(list)).as("application/json; charset=utf-8");
 	}

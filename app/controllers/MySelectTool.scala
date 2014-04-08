@@ -8,14 +8,14 @@ import utils.AccessControl;
 import utils.SelectTool;
 import models.Salesforce;
 
-object MySelectTool extends SelectTool with AccessControl {
+object MySelectTool extends SelectTool {
   
-  override def colModel = filterAction { implicit request =>
-    super.colModel(request);
+  override def colModel = AccessControl { implicit request =>
+    super.doColModel(request);
   }
   
-  override def data = filterAction { implicit request =>
-    super.data(request);
+  override def data = AccessControl { implicit request =>
+    super.doData(request);
   }
   
   override def getSQLandModel(sql: String) = {
