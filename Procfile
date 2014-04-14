@@ -1,1 +1,1 @@
-web: target/start -Dhttp.port=${PORT} -Duser.timezone=${TIMEZONE} ${JAVA_OPTS}
+web: target/universal/stage/bin/sqlsync -Dhttp.port=${PORT} -Duser.timezone=${TIMEZONE}
