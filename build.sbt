@@ -8,7 +8,7 @@ libraryDependencies ++= Seq(
   jdbc,
   anorm,
   cache,
-  "com.novus" %% "salat" % "1.9.7-SNAPSHOT",
+  "com.novus" %% "salat" % "1.9.9",
   "postgresql" % "postgresql" % "9.1-901.jdbc4",
   "com.google.code.gson" % "gson" % "2.2.2",
   "se.radley" %% "play-plugins-salat" % "1.2",
