@@ -2,7 +2,10 @@ name := "sqlsync"
 
 version := "1.0-SNAPSHOT"
 
-resolvers += "Sonatype snapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
+resolvers ++= Seq(
+  "Sonatype snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
+  "FLECT Maven Repository on Github" at "http://flect.github.io/maven-repo/"
+)
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
@@ -20,7 +23,8 @@ libraryDependencies ++= Seq(
   "org.apache.velocity" % "velocity" % "1.7",
   "log4j" % "log4j" % "1.2.17",
   "commons-lang" % "commons-lang" % "2.6",
-  "org.apache.httpcomponents" % "httpclient" % "4.3.5"
+  "org.apache.httpcomponents" % "httpclient" % "4.3.5",
+  "jp.co.flect" % "flectSalesforce" % "1.2.1"
 )
 
 scalacOptions += "-feature"
