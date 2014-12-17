@@ -20,6 +20,7 @@ import jp.co.flect.javascript.jqgrid.ColModel;
 import jp.co.flect.javascript.jqgrid.RdbColModelFactory;
 
 import scala.collection.JavaConversions._;
+import scala.language.postfixOps
 
 object Salesforce {
   

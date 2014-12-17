@@ -7,7 +7,7 @@ import play.api.mvc.Controller;
 import play.api.mvc.Action;
 import play.api.mvc.Request;
 import play.api.mvc.AnyContent;
-import play.api.mvc.SimpleResult;
+import play.api.mvc.Result;
 import play.api.cache.Cache;
 
 import play.api.libs.json.Json;
@@ -25,7 +25,7 @@ trait SelectTool extends Controller {
   
   private val CACHE_DURATION = 60 * 60;
   
-  protected def doColModel(implicit request: Request[AnyContent]): SimpleResult = {
+  protected def doColModel(implicit request: Request[AnyContent]): Result = {
     try {
       val (sql, model) = getSQLandModel;
       Ok(model.toJson).as("application/json");
@@ -38,7 +38,7 @@ trait SelectTool extends Controller {
     doColModel(request)
   }
   
-  protected def doData(implicit request: Request[AnyContent]): SimpleResult = {
+  protected def doData(implicit request: Request[AnyContent]): Result = {
     try {
       val (sql, model) = getSQLandModel;
       val gridParam = JqGrid.JqGridForm.bindFromRequest.get;

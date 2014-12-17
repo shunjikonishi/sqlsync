@@ -3,6 +3,7 @@ import play.api.Application;
 import java.util.Date;
 import java.io.File;
 import jp.co.flect.util.ResourceGen;
+import scala.language.postfixOps
 
 object Global extends GlobalSettings {
 	

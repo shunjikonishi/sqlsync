@@ -22,7 +22,7 @@ object AccessControl extends ActionBuilder[Request] {
 	
 	//Apply IP restriction and Basic authentication
 	//and Logging
-	def invokeBlock[A](request: Request[A], f: Request[A] => Future[SimpleResult]) = {
+	def invokeBlock[A](request: Request[A], f: Request[A] => Future[Result]) = {
 		def ipFilter = {
 			IP_FILTER match {
 				case Some(filter) =>

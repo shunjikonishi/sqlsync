@@ -8,7 +8,7 @@ Overview
 
 Environment
 -----------
-このアプリケーションはPlayframework2.1で開発されており、実行のためには以下の環境が必要です。
+このアプリケーションはPlayframework2.3.7で開発されており、実行のためには以下の環境が必要です。
 
 - RDBMS
 - Salesforce
