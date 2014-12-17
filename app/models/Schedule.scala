@@ -10,7 +10,7 @@ object Schedule {
 	val SCHEDULE_ENABLED = sys.env.get("SCHEDULE_ENABLED").getOrElse("true").toBoolean;
 	
 	def strToTime(str: String) = {
-		var array = str.split(":");
+		val array = str.split(":");
 		array.length match {
 			case 1 => Integer.parseInt(array(0)) * 60 * 60;
 			case 2 => Integer.parseInt(array(0)) * 60 * 60 +

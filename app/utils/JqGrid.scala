@@ -24,37 +24,4 @@ object JqGrid {
 		"sord" -> default(text, "asc")
 	)(Parameter.apply)(Parameter.unapply));
 	
-	case class Column(val name: String) {
-		
-		private var properties: Map[String, Any] = Map();
-		
-		def get(key: String) = properties(key);
-		def set(key: String, value: Any) = properties += key -> value;
-		
-		def getAsString(key: String) = get(key) match {
-			case Some(x: String) => Some(x);
-			case _ => None;
-		}
-		
-		def label: Option[String] = getAsString("label");
-		
-		def toJson: JsValue = {
-			val map = properties + ("name" -> name);
-			toJson(map);
-		}
-		
-		private def toJson(map: Map[String, Any]): Map[String, JsValue] = map.mapValues { v =>
-			toJson(v);
-		}
-		
-		private def toJson(v: Any): JsValue = v match {
-			case x: String => toJson(x);
-			case x: Int => toJson(x);
-			case x: Any => toJson(x.toString);
-		}
-	}
-}
-
-class JqGrid {
-	
 }
